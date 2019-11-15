@@ -1,0 +1,7 @@
+Instructions about running each project
+
+1. Google Map
+modify the api key value in file google_maps_api.xml
+
+
+
