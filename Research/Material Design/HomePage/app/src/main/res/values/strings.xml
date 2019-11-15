@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">HomePage</string>
+    <string name="title_friend">Friend</string>
+    <string name="title_team">Team</string>
+    <string name="title_map">Map</string>
+    <string name="title_statistic">Stats</string>
+    <string name="title_account">Account</string>
+    <string name= "undo_string">Undo</string>
+</resources>
