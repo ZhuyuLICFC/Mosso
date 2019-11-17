@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/navigation_friend"
+        android:icon="@drawable/ic_friend_24px"
+        android:title="Friend" />
+
+    <item
+        android:id="@+id/navigation_team"
+        android:icon="@drawable/ic_team_24px"
+        android:title="Team" />
+
+    <item
+        android:id="@+id/navigation_map"
+        android:icon="@drawable/ic_map_24px"
+        android:title="Map" />
+
+    <item
+        android:id="@+id/navigation_statistic"
+        android:icon="@drawable/ic_statistic_24px"
+        android:title="Stats" />
+
+    <item
+        android:id="@+id/navigation_myAccount"
+        android:icon="@drawable/ic_myaccount_24px"
+        android:title="Account" />
+
+</menu>

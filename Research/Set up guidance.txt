@@ -3,5 +3,11 @@ Instructions about running each project
 1. Google Map
 modify the api key value in file google_maps_api.xml
 
+2. AuthDemo
+should put 'google-services.json' to the '/app' directory.
+To get a 'google-services.json', you should create a Firebase 
+account and add Firebase to the Android project. Pls follow this
+link: https://firebase.google.com/docs/android/setup
+
 
 
