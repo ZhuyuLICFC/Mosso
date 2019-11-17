@@ -6,15 +6,24 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptionsExtension;
+import com.google.android.gms.common.Scopes;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Scope;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.FitnessStatusCodes;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
@@ -22,12 +31,14 @@ import com.google.android.gms.fitness.data.Field;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DailyTotalResult;
 import com.google.android.gms.fitness.result.DataReadResponse;
+import com.google.android.gms.fitness.result.DataReadResult;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
+import com.google.android.gms.tasks.Tasks;
 
 //import com.google.android.gms.drive.Drive;
 
@@ -73,6 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 11;
     String LOG_TAG = "fit";
+    static final String TAG = "Tag";
 
     TextView txtFit;
     GoogleApiClient mGoogleApiClient;
@@ -175,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(LOG_TAG, "onComplete()");
                     }
                 });
+        read3();
     }
 
     private void readData() {
@@ -231,6 +244,130 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    private void read3() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        long endTime = cal.getTimeInMillis();
+        cal.add(Calendar.YEAR, -1);
+        long startTime = cal.getTimeInMillis();
+
+        DataReadRequest readRequest = new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                .read(DataType.TYPE_STEP_COUNT_DELTA)
+                .bucketByTime(8, TimeUnit.DAYS)
+                .enableServerQueries()
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+
+        Fitness.getHistoryClient(
+                this,
+                GoogleSignIn.getLastSignedInAccount(this))
+                .readData(readRequest)
+                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                    @Override
+                    public void onSuccess(DataReadResponse dataReadResponse) {
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.toString());
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getStatus());
+                        Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
+                        Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints());
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getBuckets().get(0));
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("TAG_F", "onFailure: 1 " + e.getMessage());
+                    }
+                })
+                .addOnCompleteListener(new OnCompleteListener<DataReadResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataReadResponse> task) {
+                        Log.d("TAG_F", "onComplete: 1 ");
+                    }
+                });
+    }
+
+
+
+
+
+
+
+
+//    public void read2() {
+//
+//        Calendar cal = Calendar.getInstance();
+//        Date now = new Date();
+//        cal.setTime(now);
+//        long endTime = cal.getTimeInMillis();
+//        cal.add(Calendar.WEEK_OF_YEAR, -1);
+//        long startTime = cal.getTimeInMillis();
+//        GoogleSignInOptionsExtension fitnessOptions =
+//                FitnessOptions.builder()
+//                        .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+//                        .build();
+//
+//        GoogleSignInAccount googleSignInAccount =
+//                GoogleSignIn.getAccountForExtension(this, fitnessOptions);
+//
+//        Task<DataReadResponse> response = Fitness.getHistoryClient(this, googleSignInAccount)
+//                .readData(new DataReadRequest.Builder()
+//                        .read(DataType.TYPE_STEP_COUNT_DELTA)
+//                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+//                        .build());
+//
+//        DataReadResult readDataResult = Tasks.await(response);
+//        DataSet dataSet = readDataResult.getDataSet(DataType.TYPE_STEP_COUNT_DELTA);
+//
+//    }
+
+//    public void subscribe() {
+//        // To create a subscription, invoke the Recording API. As soon as the subscription is
+//        // active, fitness data will start recording.
+//
+//        Fitness.RecordingApi.subscribe(mClient, DataType.TYPE_STEP_COUNT_CUMULATIVE)
+//                .setResultCallback(new ResultCallback<Status>() {
+//                    @Override
+//                    public void onResult(Status status) {
+//                        String TAG1 = "subscrib";
+//                        if (status.isSuccess()) {
+//                            if (status.getStatusCode()
+//                                    == FitnessStatusCodes.SUCCESS_ALREADY_SUBSCRIBED) {
+//                                Log.i(TAG1, "Existing subscription for activity detected.");
+//                            } else {
+//                                Log.i(TAG1, "Successfully subscribed!");
+//                            }
+//                        } else {
+//                            Log.w(TAG1, "There was a problem subscribing.");
+//                        }
+//                    }
+//                });
+//    }
+//
+//    private class VerifyDataTask extends AsyncTask<Void, Void, Void> {
+//        protected Void doInBackground(Void... params) {
+//
+//            long total = 0;
+//
+//            PendingResult<DailyTotalResult> result = Fitness.HistoryApi.readDailyTotal(mClient, DataType.TYPE_STEP_COUNT_DELTA);
+//            DailyTotalResult totalResult = result.await(30, TimeUnit.SECONDS);
+//            if (totalResult.getStatus().isSuccess()) {
+//                DataSet totalSet = totalResult.getTotal();
+//                total = totalSet.isEmpty()
+//                        ? 0
+//                        : totalSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
+//            } else {
+//                Log.w(TAG, "There was a problem getting the step count.");
+//            }
+//
+//            Log.i(TAG, "Total steps: " + total);
+//
+//            return null;
+//        }
+//    }
 
 
     //saved template codes
