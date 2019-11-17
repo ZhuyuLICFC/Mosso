@@ -1,8 +1,8 @@
-package com.example.homepage;
+package bu.cs591.mosso;
 
 import android.os.Bundle;
-import android.view.Window;
 
+import bu.cs591.mosso.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 import androidx.appcompat.app.AppCompatActivity;

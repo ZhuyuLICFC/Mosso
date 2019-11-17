@@ -1,4 +1,4 @@
-package com.example.homepage;
+package bu.cs591.mosso;
 
 import android.content.Context;
 

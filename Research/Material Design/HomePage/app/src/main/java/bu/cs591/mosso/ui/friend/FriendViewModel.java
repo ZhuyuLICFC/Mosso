@@ -1,4 +1,4 @@
-package com.example.homepage.ui.friend;
+package bu.cs591.mosso.ui.friend;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

@@ -1,4 +1,4 @@
-package com.example.homepage.ui.team;
+package bu.cs591.mosso.ui.team;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

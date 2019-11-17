@@ -1,4 +1,4 @@
-package com.example.homepage.ui.statistic;
+package bu.cs591.mosso.ui.statistic;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

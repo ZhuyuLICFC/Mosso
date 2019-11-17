@@ -1,4 +1,4 @@
-package com.example.homepage.ui.account;
+package bu.cs591.mosso.ui.statistic;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,19 +12,19 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
-import com.example.homepage.R;
+import bu.cs591.mosso.R;
 
-public class AccountFragment extends Fragment {
+public class StatisticFragment extends Fragment {
 
-    private AccountViewModel accountViewModel;
+    private StatisticViewModel statisticViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        accountViewModel =
-                ViewModelProviders.of(this).get(AccountViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_account, container, false);
-        final TextView textView = root.findViewById(R.id.text_account);
-        accountViewModel.getText().observe(this, new Observer<String>() {
+        statisticViewModel =
+                ViewModelProviders.of(this).get(StatisticViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_statistic, container, false);
+        final TextView textView = root.findViewById(R.id.text_statistic);
+        statisticViewModel.getText().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);
