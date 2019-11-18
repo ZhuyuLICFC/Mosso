@@ -6,10 +6,13 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -39,6 +42,8 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.tasks.Tasks;
+import com.txusballesteros.widgets.FitChart;
+import com.txusballesteros.widgets.FitChartValue;
 
 //import com.google.android.gms.drive.Drive;
 
@@ -87,6 +92,7 @@ public class MainActivity extends AppCompatActivity {
     static final String TAG = "Tag";
 
     TextView txtFit;
+    TextView totalSteps;
     GoogleApiClient mGoogleApiClient;
 
 
@@ -97,6 +103,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("aapp");
 
         txtFit = (TextView) findViewById(R.id.txtFit);
+        totalSteps = (TextView) findViewById(R.id.totalSteps);
 
 
 //        mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -117,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
-            txtFit.setText("aaa");
+            Toast.makeText(this,"No permission", Toast.LENGTH_SHORT).show();
         } else {
             accessGoogleFit();
             //readData();
@@ -125,7 +132,6 @@ public class MainActivity extends AppCompatActivity {
 
         //accessGoogleFit();
         //readData();
-
 
     }
 
@@ -150,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
     //step 3 : access the google fit app data
     private void accessGoogleFit() {
         System.out.println("access");
-        txtFit.setText("access");
+        Toast.makeText(this,"access", Toast.LENGTH_SHORT).show();
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         long endTime = cal.getTimeInMillis();
@@ -164,15 +170,18 @@ public class MainActivity extends AppCompatActivity {
                 .bucketByTime(1, TimeUnit.DAYS)
                 .build();
 
-
-
         Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this))
                 .readData(readRequest)
                 .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
                     @Override
                     public void onSuccess(DataReadResponse dataReadResponse) {
                         Log.d(LOG_TAG, "onSuccess()");
-                        txtFit.setText("Sucessfully got fit data\n");
+                        Toast.makeText(getApplicationContext(),"Sucessfully got fit data\n", Toast.LENGTH_LONG).show();
+                        totalSteps.setText("4.379 steps today");
+                        final FitChart fitChart = (FitChart)findViewById(R.id.fitChart);
+                        fitChart.setMinValue(0f);
+                        fitChart.setMaxValue(10000f);
+                        fitChart.setValue(4379f);
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -192,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void readData() {
         System.out.println("readdata");
-        txtFit.setText("readdata");
+        Toast.makeText(this,"read data", Toast.LENGTH_SHORT).show();
         Calendar cal = Calendar.getInstance();
         Date now = new Date();
         cal.setTime(now);
