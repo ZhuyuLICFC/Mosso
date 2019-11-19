@@ -177,11 +177,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onSuccess(DataReadResponse dataReadResponse) {
                         Log.d(LOG_TAG, "onSuccess()");
                         Toast.makeText(getApplicationContext(),"Sucessfully got fit data\n", Toast.LENGTH_LONG).show();
-                        totalSteps.setText("4.379 steps today");
-                        final FitChart fitChart = (FitChart)findViewById(R.id.fitChart);
-                        fitChart.setMinValue(0f);
-                        fitChart.setMaxValue(10000f);
-                        fitChart.setValue(4379f);
+                        setTotalSteps();
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -403,8 +399,13 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-
-
+    private void setTotalSteps(){
+        totalSteps.setText("4.379 steps today");
+        final FitChart fitChart = (FitChart)findViewById(R.id.fitChart);
+        fitChart.setMinValue(0f);
+        fitChart.setMaxValue(10000f);
+        fitChart.setValue(4379f);
+    }
 }
 
 
