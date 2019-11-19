@@ -195,59 +195,59 @@ public class MainActivity extends AppCompatActivity {
         read3();
     }
 
-    private void readData() {
-        System.out.println("readdata");
-        Toast.makeText(this,"read data", Toast.LENGTH_SHORT).show();
-        Calendar cal = Calendar.getInstance();
-        Date now = new Date();
-        cal.setTime(now);
-        long endTime = cal.getTimeInMillis();
-        cal.add(Calendar.WEEK_OF_YEAR, -1);
-        long startTime = cal.getTimeInMillis();
+//    private void readData() {
+//        System.out.println("readdata");
+//        Toast.makeText(this,"read data", Toast.LENGTH_SHORT).show();
+//        Calendar cal = Calendar.getInstance();
+//        Date now = new Date();
+//        cal.setTime(now);
+//        long endTime = cal.getTimeInMillis();
+//        cal.add(Calendar.WEEK_OF_YEAR, -1);
+//        long startTime = cal.getTimeInMillis();
+//
+//        java.text.DateFormat dateFormat = getDateInstance();
+//        //Log.i(TAG, "Range Start: " + dateFormat.format(startTime));
+//        //Log.i(TAG, "Range End: " + dateFormat.format(endTime));
+//
+//        DataReadRequest readRequest =
+//                new DataReadRequest.Builder()
+//                        // The data request can specify multiple data types to return, effectively
+//                        // combining multiple data queries into one call.
+//                        // In this example, it's very unlikely that the request is for several hundred
+//                        // datapoints each consisting of a few steps and a timestamp.  The more likely
+//                        // scenario is wanting to see how many steps were walked per day, for 7 days.
+//                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                        // Analogous to a "Group By" in SQL, defines how data should be aggregated.
+//                        // bucketByTime allows for a time span, whereas bucketBySession would allow
+//                        // bucketing by "sessions", which would need to be defined in code.
+//                        .bucketByTime(1, TimeUnit.DAYS)
+//                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+//                        .build();
+//
+//        Task<DataReadResponse> response = Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this)).readData(readRequest);
+//        List<DataSet> dataSets = response.getResult().getDataSets();
+//        System.out.println(dataSets.size());
+//        txtFit.setText(dataSets.size());
+//        dumpDataSet(dataSets.get(0));
+//    }
 
-        java.text.DateFormat dateFormat = getDateInstance();
-        //Log.i(TAG, "Range Start: " + dateFormat.format(startTime));
-        //Log.i(TAG, "Range End: " + dateFormat.format(endTime));
-
-        DataReadRequest readRequest =
-                new DataReadRequest.Builder()
-                        // The data request can specify multiple data types to return, effectively
-                        // combining multiple data queries into one call.
-                        // In this example, it's very unlikely that the request is for several hundred
-                        // datapoints each consisting of a few steps and a timestamp.  The more likely
-                        // scenario is wanting to see how many steps were walked per day, for 7 days.
-                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-                        // Analogous to a "Group By" in SQL, defines how data should be aggregated.
-                        // bucketByTime allows for a time span, whereas bucketBySession would allow
-                        // bucketing by "sessions", which would need to be defined in code.
-                        .bucketByTime(1, TimeUnit.DAYS)
-                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                        .build();
-
-        Task<DataReadResponse> response = Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this)).readData(readRequest);
-        List<DataSet> dataSets = response.getResult().getDataSets();
-        System.out.println(dataSets.size());
-        txtFit.setText(dataSets.size());
-        dumpDataSet(dataSets.get(0));
-    }
-
-    private void dumpDataSet(DataSet dataSet) {
-        String TAG = "dumpData";
-        Log.i(TAG, "Data returned for Data type: " + dataSet.getDataType().getName());
-        DateFormat dateFormat = getTimeInstance();
-
-        for (DataPoint dp : dataSet.getDataPoints()) {
-            Log.i(TAG, "Data point:");
-            Log.i(TAG, "\tType: " + dp.getDataType().getName());
-            Log.i(TAG, "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
-            Log.i(TAG, "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)));
-            for (Field field : dp.getDataType().getFields()) {
-                Log.i(TAG, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
-            }
-            txtFit.setText("\tType: " + dp.getDataType().getName());
-            System.out.println("Data point:\tType: " + dp.getDataType().getName());
-        }
-    }
+//    private void dumpDataSet(DataSet dataSet) {
+//        String TAG = "dumpData";
+//        Log.i(TAG, "Data returned for Data type: " + dataSet.getDataType().getName());
+//        DateFormat dateFormat = getTimeInstance();
+//
+//        for (DataPoint dp : dataSet.getDataPoints()) {
+//            Log.i(TAG, "Data point:");
+//            Log.i(TAG, "\tType: " + dp.getDataType().getName());
+//            Log.i(TAG, "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+//            Log.i(TAG, "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)));
+//            for (Field field : dp.getDataType().getFields()) {
+//                Log.i(TAG, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
+//            }
+//            txtFit.setText("\tType: " + dp.getDataType().getName());
+//            System.out.println("Data point:\tType: " + dp.getDataType().getName());
+//        }
+//    }
 
 
     private void read3() {
