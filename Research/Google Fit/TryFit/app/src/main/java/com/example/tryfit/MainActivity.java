@@ -249,7 +249,8 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-
+    //Step4: read different types  of data
+    //the following function tries to read the STEP_COUNT_DELTA
     private void read3() {
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
