@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mobile_navigation"
+    app:startDestination="@+id/navigation_map">
+
+    <fragment
+        android:id="@+id/navigation_friend"
+        android:name="bu.cs591.mosso.ui.friend.FriendFragment"
+        android:label="@string/title_friend"
+        tools:layout="@layout/fragment_friend" />
+
+    <fragment
+        android:id="@+id/navigation_team"
+        android:name="bu.cs591.mosso.ui.team.TeamFragment"
+        android:label="@string/title_team"
+        tools:layout="@layout/fragment_team" />
+
+    <fragment
+        android:id="@+id/navigation_map"
+        android:name="bu.cs591.mosso.ui.map.MapFragment"
+        android:label="@string/title_map"
+        tools:layout="@layout/fragment_map" />
+
+    <fragment
+        android:id="@+id/navigation_statistic"
+        android:name="bu.cs591.mosso.ui.statistic.StatisticFragment"
+        android:label="@string/title_statistic"
+        tools:layout="@layout/fragment_statistic" />
+
+    <fragment
+        android:id="@+id/navigation_myAccount"
+        android:name="bu.cs591.mosso.ui.account.AccountFragment"
+        android:label="@string/title_account"
+        tools:layout="@layout/fragment_account" />
+</navigation>

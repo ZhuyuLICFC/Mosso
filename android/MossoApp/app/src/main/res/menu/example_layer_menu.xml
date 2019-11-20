@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/option_myLocation_1"
+        android:checkable="true"
+        android:icon="@drawable/common_google_signin_btn_icon_dark_normal_background"
+        android:title="Mine" />
+
+    <item
+        android:id="@+id/option_track_2"
+        android:checkable="true"
+        android:icon="@drawable/common_google_signin_btn_icon_dark_normal_background"
+        android:title="Track" />
+
+    <item
+        android:id="@+id/option_other_Location_3"
+        android:checkable="true"
+        android:icon="@drawable/common_google_signin_btn_icon_dark_normal_background"
+        android:title="Others" />
+
+</menu>
