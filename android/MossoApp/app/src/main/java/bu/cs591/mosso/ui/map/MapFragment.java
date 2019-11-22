@@ -1,10 +1,21 @@
 package bu.cs591.mosso.ui.map;
 
+import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -15,6 +26,9 @@ import android.widget.Toast;
 
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
+import bu.cs591.mosso.BuildConfig;
+import bu.cs591.mosso.LocationUpdatesService;
+import bu.cs591.mosso.MainActivity;
 import bu.cs591.mosso.R;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -24,19 +38,24 @@ import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import bu.cs591.mosso.Utils;
 import bu.cs591.mosso.db.MapMarker;
+import bu.cs591.mosso.db.RunningRepo;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     private FloatingActionButton btnRunStart;
 
@@ -44,8 +63,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private MapViewModel mViewModel;
 
+    private RunningRepo myRepo;
+
+    public interface MapFragmentListener {
+        public void runStart();
+        public void runStop();
+    }
+
+    private MapFragmentListener mListener;
+
     // Map Related...
-    private static final String TAG = "MAPS_DEBUG";//MapsActivity.class.getSimpleName();
+    private static final String TAG = MapFragment.class.getSimpleName();
     private GoogleMap mMap;
     private CameraPosition mCameraPosition;
 
@@ -55,6 +83,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     // not granted.
     private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
     private static final int DEFAULT_ZOOM = 15;
+    private static final int RUNNING_ZOOM = 18;
     private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
     private boolean mLocationPermissionGranted;
 
@@ -68,12 +97,29 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private List<Marker> markers;
 
+    private Polyline routes;
+
+    private Observer<List<Location>> locationObserver;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
 
         mContext = context;
+        mListener = (MapFragmentListener) context;
+        markers = new ArrayList<>();
+        myRepo = RunningRepo.getInstance();
         locationManager = (LocationManager)mContext.getSystemService(Context.LOCATION_SERVICE);
+        locationObserver = new Observer<List<Location>>() {
+            @Override
+            public void onChanged(List<Location> locations) {
+                List<LatLng> points = new LinkedList<>();
+                for (Location loc : locations) {
+                    points.add(new LatLng(loc.getLatitude(), loc.getLongitude()));
+                }
+                routes.setPoints(points);
+            }
+        };
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -83,20 +129,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         // instantiate the view model
         mViewModel = ViewModelProviders.of(this).get(MapViewModel.class);
 
-        markers = new ArrayList<>();
-
         // inflate the map fragment and start initialize the map
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        // button just to show the snackbar...
         btnRunStart = root.findViewById(R.id.fab_run_mainPage);
         btnRunStart.setOnClickListener(new View.OnClickListener() {
             public void onClick (View view){
-                Snackbar snackbar = Snackbar.make(view , "Start Running...", Snackbar.LENGTH_LONG);
-                snackbar.setAction(R.string.undo_string, this);
-                snackbar.show();
+                if (!Utils.requestingLocationUpdates(mContext)) {
+                    Snackbar snackbar = Snackbar.make(view, "Start Running...", Snackbar.LENGTH_LONG);
+                    snackbar.setAction(R.string.undo_string, this);
+                    snackbar.show();
+                    mListener.runStart();
+                    startRunning();
+                } else {
+                    Snackbar snackbar = Snackbar.make(view, "Stop Running...", Snackbar.LENGTH_LONG);
+                    snackbar.setAction(R.string.undo_string, this);
+                    snackbar.show();
+                    stopRunning();
+                    mListener.runStop();
+                }
             }
 
         });
@@ -118,13 +171,15 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         mMap = map;
 
         // Prompt the user for permission.
-        getLocationPermission();
+        if (!checkPermissions()) {
+            requestPermissions();
+        }
 
         // Turn on the My Location layer and the related control on the map.
         updateLocationUI();
 
         // Get the current location of the device and set the position of the map.
-        getDeviceLocation();
+        getDeviceLocation(DEFAULT_ZOOM);
 
         // bind the observer of view model here
         mViewModel.getNeighbors().observe(this, new Observer<List<MapMarker>>() {
@@ -142,6 +197,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 }
             }
         });
+
+        // if is running right now
+        if (Utils.requestingLocationUpdates(mContext) && mLocationPermissionGranted) {
+            startRunning();
+        }
+    }
+
+    private void startRunning() {
+        routes = mMap.addPolyline(new PolylineOptions().color(Color.RED));
+        myRepo.getRoutes().observe(this, locationObserver);
+        getDeviceLocation(RUNNING_ZOOM);
+    }
+
+    private void stopRunning() {
+        myRepo.getRoutes().removeObserver(locationObserver);
+        routes.remove();
+        getDeviceLocation(DEFAULT_ZOOM);
     }
 
     private void clearMarkers() {
@@ -154,7 +226,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     /**
      * Gets the current location of the device, and positions the map's camera.
      */
-    private void getDeviceLocation() {
+    private void getDeviceLocation(int zoom) {
         /*
          * Get the best and most recent location of the device, which may be null in rare
          * cases when a location is not available.
@@ -166,57 +238,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 if (mLastKnownLocation != null) {
                     // update it to the map
                     mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), DEFAULT_ZOOM));
+                            new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), zoom));
                 } else {
                     // if not find the location, load a default one
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, DEFAULT_ZOOM));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, zoom));
                     mMap.getUiSettings().setMyLocationButtonEnabled(false);
                 }
             }
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
         }
-    }
-
-    /**
-     * Prompts the user for permission to use the device location.
-     */
-    private void getLocationPermission() {
-        /*
-         * Request location permission, so that we can get the location of the
-         * device. The result of the permission request is handled by a callback,
-         * onRequestPermissionsResult.
-         */
-        if (ContextCompat.checkSelfPermission(mContext,
-                android.Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mLocationPermissionGranted = true;
-        } else {
-            ActivityCompat.requestPermissions(getActivity(),
-                    new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION},
-                    PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-        }
-    }
-
-    /**
-     * Handles the result of the request for location permissions.
-     */
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String permissions[],
-                                           @NonNull int[] grantResults) {
-        mLocationPermissionGranted = false;
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    mLocationPermissionGranted = true;
-                    getDeviceLocation();
-                }
-            }
-        }
-        updateLocationUI();
     }
 
     /**
@@ -235,10 +266,99 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
                 mMap.setMyLocationEnabled(false);
                 mMap.getUiSettings().setMyLocationButtonEnabled(false);
                 mLastKnownLocation = null;
-                getLocationPermission();
+                requestPermissions();
             }
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage());
+        }
+    }
+
+    /**
+     * Returns the current state of the permissions needed.
+     */
+    private boolean checkPermissions() {
+        mLocationPermissionGranted = PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(mContext,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+        return mLocationPermissionGranted;
+    }
+
+    private void requestPermissions() {
+        boolean shouldProvideRationale =
+                shouldShowRequestPermissionRationale(Manifest.permission.ACCESS_FINE_LOCATION);
+
+        // Provide an additional rationale to the user. This would happen if the user denied the
+        // request previously, but didn't check the "Don't ask again" checkbox.
+        if (shouldProvideRationale) {
+            Log.i(TAG, "Displaying permission rationale to provide additional context.");
+            Snackbar.make(
+                    getActivity().findViewById(R.id.nav_view),
+                    R.string.permission_rationale,
+                    Snackbar.LENGTH_INDEFINITE)
+                    .setAction("OK", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            // Request permission
+                            requestPermissions(
+                                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                                    MainActivity.REQUEST_PERMISSIONS_REQUEST_CODE);
+                        }
+                    })
+                    .show();
+        } else {
+            Log.i(TAG, "Requesting permission");
+            // Request permission. It's possible this can be auto answered if device policy
+            // sets the permission in a given state or the user denied the permission
+            // previously and checked "Never ask again".
+            requestPermissions(
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    MainActivity.REQUEST_PERMISSIONS_REQUEST_CODE);
+        }
+    }
+
+    /**
+     * Callback received when a permissions request has been completed.
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        Log.i(TAG, "onRequestPermissionResult");
+        if (requestCode == MainActivity.REQUEST_PERMISSIONS_REQUEST_CODE) {
+            if (grantResults.length <= 0) {
+                // If user interaction was interrupted, the permission request is cancelled and you
+                // receive empty arrays.
+                Log.i(TAG, "User interaction was cancelled.");
+            } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                mLocationPermissionGranted = true;
+                if (Utils.requestingLocationUpdates(mContext))
+                    startRunning();
+                else
+                    getDeviceLocation(DEFAULT_ZOOM);
+            } else {
+                // Permission denied.
+                //setButtonsState(false);
+                if (Utils.requestingLocationUpdates(mContext))
+                    stopRunning();
+                Snackbar.make(
+                        getActivity().findViewById(R.id.nav_view),
+                        R.string.permission_denied_explanation,
+                        Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.settings, new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                // Build intent that displays the App settings screen.
+                                Intent intent = new Intent();
+                                intent.setAction(
+                                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+                                Uri uri = Uri.fromParts("package",
+                                        BuildConfig.APPLICATION_ID, null);
+                                intent.setData(uri);
+                                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                startActivity(intent);
+                            }
+                        })
+                        .show();
+            }
+            updateLocationUI();
         }
     }
 
@@ -247,9 +367,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         super.onCreateContextMenu(menu, v, menuInfo);
         menu.setHeaderTitle("Mosso options");
         getActivity().getMenuInflater().inflate(R.menu.example_layer_menu, menu);
-
-        // use switch if you have more menus by call v
-
     }
 
     @Override

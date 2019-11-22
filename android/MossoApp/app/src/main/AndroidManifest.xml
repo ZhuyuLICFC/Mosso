@@ -6,6 +6,9 @@
          Google Maps Android API v2, but you must specify either coarse or fine
          location permissions for the 'MyLocation' functionality.
     -->
+    <!-- Required for foreground services on P+. -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
     <application
@@ -34,6 +37,13 @@
             android:name="bu.cs591.mosso.MainActivity"
             android:label="@string/app_name">
         </activity>
+
+        <!-- Foreground services in Q+ require type. -->
+        <service
+            android:name="bu.cs591.mosso.LocationUpdatesService"
+            android:enabled="true"
+            android:exported="true"
+            android:foregroundServiceType="location" />
     </application>
 
 </manifest>

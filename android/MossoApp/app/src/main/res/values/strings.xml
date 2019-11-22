@@ -6,4 +6,11 @@
     <string name="title_statistic">Stats</string>
     <string name="title_account">Account</string>
     <string name="undo_string">Undo</string>
+    <string name="launch_activity">Open Mosso</string>
+    <string name="stop_running">Stop Running</string>
+    <string name="location_updated">Location Updated: %1$s</string>
+    <string name="permission_rationale">Location permission is needed for core functionality</string>
+    <string name="permission_denied_explanation">Permission was denied, but is needed for core
+        functionality.</string>
+    <string name="settings">Settings</string>
 </resources>

@@ -36,12 +36,6 @@ public class AccountViewModel extends ViewModel {
 
         myAccount = new MutableLiveData<>();
         FirebaseUser fireUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (fireUser == null) {
-            Log.e("ACCOUNT_DEBUG", "fireUser is null?");
-        } else {
-            Log.i("ACCOUNT_DEBUG", fireUser.getUid());
-            Log.i("ACCOUNT_DEBUG", fireUser.getEmail());
-        }
         mUser = new User(fireUser.getDisplayName(),
                 fireUser.getEmail(), fireUser.getPhotoUrl());
         myAccount.setValue(mUser);
