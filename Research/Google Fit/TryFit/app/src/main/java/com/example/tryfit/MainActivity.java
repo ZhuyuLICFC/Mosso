@@ -6,13 +6,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -27,6 +24,7 @@ import com.google.android.gms.common.api.Status;
 import com.google.android.gms.fitness.Fitness;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.FitnessStatusCodes;
+import com.google.android.gms.fitness.data.Bucket;
 import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
@@ -42,8 +40,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.tasks.Tasks;
-import com.txusballesteros.widgets.FitChart;
-import com.txusballesteros.widgets.FitChartValue;
 
 //import com.google.android.gms.drive.Drive;
 
@@ -92,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
     static final String TAG = "Tag";
 
     TextView txtFit;
-    TextView totalSteps;
     GoogleApiClient mGoogleApiClient;
 
 
@@ -103,7 +98,6 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("aapp");
 
         txtFit = (TextView) findViewById(R.id.txtFit);
-        totalSteps = (TextView) findViewById(R.id.totalSteps);
 
 
 //        mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -124,7 +118,7 @@ public class MainActivity extends AppCompatActivity {
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
-            Toast.makeText(this,"No permission", Toast.LENGTH_SHORT).show();
+            txtFit.setText("aaa");
         } else {
             accessGoogleFit();
             //readData();
@@ -132,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
         //accessGoogleFit();
         //readData();
+
 
     }
 
@@ -156,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
     //step 3 : access the google fit app data
     private void accessGoogleFit() {
         System.out.println("access");
-        Toast.makeText(this,"access", Toast.LENGTH_SHORT).show();
+        txtFit.setText("access");
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         long endTime = cal.getTimeInMillis();
@@ -166,9 +161,12 @@ public class MainActivity extends AppCompatActivity {
 
         DataReadRequest readRequest = new DataReadRequest.Builder()
                 .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+                //.aggregate(DataType.TYPE_CALORIES_EXPENDED, DataType.AGGREGATE_CALORIES_EXPENDED)
                 .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
                 .bucketByTime(1, TimeUnit.DAYS)
                 .build();
+
+
 
         Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this))
                 .readData(readRequest)
@@ -176,8 +174,33 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(DataReadResponse dataReadResponse) {
                         Log.d(LOG_TAG, "onSuccess()");
-                        Toast.makeText(getApplicationContext(),"Sucessfully got fit data\n", Toast.LENGTH_LONG).show();
-                        setTotalSteps();
+                        txtFit.setText("Sucessfully got fit data\n");
+                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.toString());
+                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getStatus());
+                        Log.d("TAG_F", "onSuccess: 2calotry " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
+                        Log.d("TAG_F", "onSuccess: 2step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints());
+                        //Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getBuckets().get(0));
+                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
+
+                        for (Bucket bucket : dataReadResponse.getBuckets()) {
+                            List<DataSet> dataSets = bucket.getDataSets();
+                            for (DataSet dataSet : dataSets) {
+                                DateFormat dateFormat = getTimeInstance();
+
+                                for (DataPoint dp : dataSet.getDataPoints()) {
+                                    Log.d("TAG_F", "Data point:");
+                                    Log.d("TAG_F", "\tType: " + dp.getDataType().getName());
+                                    Log.d("TAG_F", "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+                                    Log.d("TAG_F", "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)));
+                                    for (Field field : dp.getDataType().getFields()) {
+                                        Log.i("TAG_F", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
+                                        txtFit.setText("step:" + dp.getValue(field));
+                                    }
+                                }
+                            }
+                        }
+
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -193,43 +216,221 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
         read3();
+        readHistoryData();
+        //read4();
     }
 
-//    private void readData() {
-//        System.out.println("readdata");
-//        Toast.makeText(this,"read data", Toast.LENGTH_SHORT).show();
-//        Calendar cal = Calendar.getInstance();
-//        Date now = new Date();
-//        cal.setTime(now);
-//        long endTime = cal.getTimeInMillis();
-//        cal.add(Calendar.WEEK_OF_YEAR, -1);
-//        long startTime = cal.getTimeInMillis();
-//
-//        java.text.DateFormat dateFormat = getDateInstance();
-//        //Log.i(TAG, "Range Start: " + dateFormat.format(startTime));
-//        //Log.i(TAG, "Range End: " + dateFormat.format(endTime));
-//
-//        DataReadRequest readRequest =
-//                new DataReadRequest.Builder()
-//                        // The data request can specify multiple data types to return, effectively
-//                        // combining multiple data queries into one call.
-//                        // In this example, it's very unlikely that the request is for several hundred
-//                        // datapoints each consisting of a few steps and a timestamp.  The more likely
-//                        // scenario is wanting to see how many steps were walked per day, for 7 days.
-//                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-//                        // Analogous to a "Group By" in SQL, defines how data should be aggregated.
-//                        // bucketByTime allows for a time span, whereas bucketBySession would allow
-//                        // bucketing by "sessions", which would need to be defined in code.
-//                        .bucketByTime(1, TimeUnit.DAYS)
-//                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-//                        .build();
-//
-//        Task<DataReadResponse> response = Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this)).readData(readRequest);
-//        List<DataSet> dataSets = response.getResult().getDataSets();
-//        System.out.println(dataSets.size());
-//        txtFit.setText(dataSets.size());
-//        dumpDataSet(dataSets.get(0));
-//    }
+    private void read3() {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        long endTime = cal.getTimeInMillis();
+        cal.add(Calendar.WEEK_OF_YEAR, -1);
+        long startTime = cal.getTimeInMillis();
+
+        DataReadRequest readRequest = new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+//                .read(DataType.TYPE_STEP_COUNT_DELTA)
+                //.aggregate(DataType.TYPE_CALORIES_EXPENDED, DataType.AGGREGATE_CALORIES_EXPENDED)
+                .bucketByTime(8, TimeUnit.DAYS)
+                .enableServerQueries()
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .build();
+
+        Fitness.getHistoryClient(
+                this,
+                GoogleSignIn.getLastSignedInAccount(this))
+                .readData(readRequest)
+                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                    @Override
+                    public void onSuccess(DataReadResponse dataReadResponse) {
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.toString());
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getStatus());
+                        Log.d("TAG_F", "onSuccess: calotry " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
+                        Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints());
+                        //Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getBuckets().get(0));
+                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
+
+
+
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.d("TAG_F", "onFailure: 1 " + e.getMessage());
+                    }
+                })
+                .addOnCompleteListener(new OnCompleteListener<DataReadResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataReadResponse> task) {
+                        Log.d("TAG_F", "onComplete: 1 ");
+                    }
+                });
+    }
+
+
+
+
+
+
+
+
+
+    private Task<DataReadResponse> readHistoryData() {
+        // Begin by creating the query.
+        DataReadRequest readRequest = queryFitnessData();
+
+        // Invoke the History API to fetch the data with the query
+        return Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this))
+                .readData(readRequest)
+                .addOnSuccessListener(
+                        new OnSuccessListener<DataReadResponse>() {
+                            @Override
+                            public void onSuccess(DataReadResponse dataReadResponse) {
+                                // For the sake of the sample, we'll print the data so we can see what we just
+                                // added. In general, logging fitness information should be avoided for privacy
+                                // reasons.
+                                printData(dataReadResponse);
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.e(TAG, "There was a problem reading the data.", e);
+                            }
+                        });
+    }
+
+
+    public static DataReadRequest queryFitnessData() {
+        // [START build_read_data_request]
+        // Setting a start and end date using a range of 1 week before this moment.
+        Calendar cal = Calendar.getInstance();
+        Date now = new Date();
+        cal.setTime(now);
+        long endTime = cal.getTimeInMillis();
+        cal.add(Calendar.WEEK_OF_YEAR, -1);
+        long startTime = cal.getTimeInMillis();
+
+        java.text.DateFormat dateFormat = getDateInstance();
+        Log.i(TAG, "Range Start: " + dateFormat.format(startTime));
+        Log.i(TAG, "Range End: " + dateFormat.format(endTime));
+
+        DataReadRequest readRequest =
+                new DataReadRequest.Builder()
+                        // The data request can specify multiple data types to return, effectively
+                        // combining multiple data queries into one call.
+                        // In this example, it's very unlikely that the request is for several hundred
+                        // datapoints each consisting of a few steps and a timestamp.  The more likely
+                        // scenario is wanting to see how many steps were walked per day, for 7 days.
+                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+                        // Analogous to a "Group By" in SQL, defines how data should be aggregated.
+                        // bucketByTime allows for a time span, whereas bucketBySession would allow
+                        // bucketing by "sessions", which would need to be defined in code.
+                        .bucketByTime(1, TimeUnit.DAYS)
+                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                        .build();
+        // [END build_read_data_request]
+
+        return readRequest;
+    }
+
+    /**
+     * Logs a record of the query result. It's possible to get more constrained data sets by
+     * specifying a data source or data type, but for demonstrative purposes here's how one would dump
+     * all the data. In this sample, logging also prints to the device screen, so we can see what the
+     * query returns, but your app should not log fitness information as a privacy consideration. A
+     * better option would be to dump the data you receive to a local data directory to avoid exposing
+     * it to other applications.
+     */
+    public static void printData(DataReadResponse dataReadResult) {
+        // [START parse_read_data_result]
+        // If the DataReadRequest object specified aggregated data, dataReadResult will be returned
+        // as buckets containing DataSets, instead of just DataSets.
+        if (dataReadResult.getBuckets().size() > 0) {
+            Log.i(
+                    TAG, "Number of returned buckets of DataSets is: " + dataReadResult.getBuckets().size());
+            for (Bucket bucket : dataReadResult.getBuckets()) {
+                List<DataSet> dataSets = bucket.getDataSets();
+                for (DataSet dataSet : dataSets) {
+                    dumpDataSet(dataSet);
+                }
+            }
+        } else if (dataReadResult.getDataSets().size() > 0) {
+            Log.i(TAG, "Number of returned DataSets is: " + dataReadResult.getDataSets().size());
+            for (DataSet dataSet : dataReadResult.getDataSets()) {
+                dumpDataSet(dataSet);
+            }
+        }
+        // [END parse_read_data_result]
+    }
+
+    // [START parse_dataset]
+    private static void dumpDataSet(DataSet dataSet) {
+        Log.i(TAG, "Data returned for Data type: " + dataSet.getDataType().getName());
+        DateFormat dateFormat = getTimeInstance();
+
+        for (DataPoint dp : dataSet.getDataPoints()) {
+            Log.i(TAG, "Data point:");
+            Log.i(TAG, "\tType: " + dp.getDataType().getName());
+            Log.i(TAG, "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+            Log.i(TAG, "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)));
+            for (Field field : dp.getDataType().getFields()) {
+                Log.i(TAG, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
+            }
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+    private void readData() {
+        System.out.println("readdata");
+        txtFit.setText("readdata");
+        Calendar cal = Calendar.getInstance();
+        Date now = new Date();
+        cal.setTime(now);
+        long endTime = cal.getTimeInMillis();
+        cal.add(Calendar.WEEK_OF_YEAR, -1);
+        long startTime = cal.getTimeInMillis();
+
+        java.text.DateFormat dateFormat = getDateInstance();
+        //Log.i(TAG, "Range Start: " + dateFormat.format(startTime));
+        //Log.i(TAG, "Range End: " + dateFormat.format(endTime));
+
+        DataReadRequest readRequest =
+                new DataReadRequest.Builder()
+                        // The data request can specify multiple data types to return, effectively
+                        // combining multiple data queries into one call.
+                        // In this example, it's very unlikely that the request is for several hundred
+                        // datapoints each consisting of a few steps and a timestamp.  The more likely
+                        // scenario is wanting to see how many steps were walked per day, for 7 days.
+                        .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+                        // Analogous to a "Group By" in SQL, defines how data should be aggregated.
+                        // bucketByTime allows for a time span, whereas bucketBySession would allow
+                        // bucketing by "sessions", which would need to be defined in code.
+                        .bucketByTime(1, TimeUnit.DAYS)
+                        .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                        .build();
+
+        Task<DataReadResponse> response = Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this)).readData(readRequest);
+        List<DataSet> dataSets = response.getResult().getDataSets();
+        System.out.println(dataSets.size());
+        txtFit.setText(dataSets.size());
+        dumpDataSet(dataSets.get(0));
+    }
 
 //    private void dumpDataSet(DataSet dataSet) {
 //        String TAG = "dumpData";
@@ -249,52 +450,27 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-    //Step4: read different types of data
-    //the following function tries to read the STEP_COUNT_DELTA
-    private void read3() {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        long endTime = cal.getTimeInMillis();
-        cal.add(Calendar.YEAR, -1);
-        long startTime = cal.getTimeInMillis();
+//    protected void read4() {
+//
+//        long total = 0;
+//
+//        PendingResult<DailyTotalResult> result = Fitness.HistoryApi.readDailyTotal(mClient, DataType.TYPE_STEP_COUNT_DELTA);
+//        DailyTotalResult totalResult = result.await(30, TimeUnit.SECONDS);
+//        if (totalResult.getStatus().isSuccess()) {
+//            DataSet totalSet = totalResult.getTotal();
+//            total = totalSet.isEmpty()
+//                    ? 0
+//                    : totalSet.getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt();
+//        } else {
+//            Log.w(TAG, "There was a problem getting the step count.");
+//        }
+//
+//        Log.i(TAG, "Total steps: " + total);
+//
+//        return;
+//    }
 
-        DataReadRequest readRequest = new DataReadRequest.Builder()
-                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
-//                .read(DataType.TYPE_STEP_COUNT_DELTA)
-                .bucketByTime(8, TimeUnit.DAYS)
-                .enableServerQueries()
-                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
-                .build();
 
-        Fitness.getHistoryClient(
-                this,
-                GoogleSignIn.getLastSignedInAccount(this))
-                .readData(readRequest)
-                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
-                    @Override
-                    public void onSuccess(DataReadResponse dataReadResponse) {
-                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.toString());
-                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getStatus());
-                        Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
-                        Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints());
-                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getBuckets().get(0));
-                        Log.d("TAG_F", "onSuccess: 1 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
-
-                    }
-                })
-                .addOnFailureListener(new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.d("TAG_F", "onFailure: 1 " + e.getMessage());
-                    }
-                })
-                .addOnCompleteListener(new OnCompleteListener<DataReadResponse>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DataReadResponse> task) {
-                        Log.d("TAG_F", "onComplete: 1 ");
-                    }
-                });
-    }
 
 
 
@@ -400,13 +576,8 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
-    private void setTotalSteps(){
-        totalSteps.setText("4.379 steps today");
-        final FitChart fitChart = (FitChart)findViewById(R.id.fitChart);
-        fitChart.setMinValue(0f);
-        fitChart.setMaxValue(10000f);
-        fitChart.setValue(4379f);
-    }
+
+
 }
 
 
