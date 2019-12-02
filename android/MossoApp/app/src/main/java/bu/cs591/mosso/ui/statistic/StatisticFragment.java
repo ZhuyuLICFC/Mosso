@@ -73,6 +73,7 @@ public class StatisticFragment extends Fragment {
             .build();
     int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 11;
     String LOG_TAG = "fit";
+    String TAG_F = "GoogleFitData";
 
     public int totalStep;
 
@@ -138,8 +139,8 @@ public class StatisticFragment extends Fragment {
         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
 
         DateFormat dateFormat = getTimeInstance(DateFormat.LONG);
-        System.out.println("start Time " + startTime + " " + dateFormat.format(startTime) + " " + formatter.format(startTime));
-        System.out.println("end time " + endTime + " " + dateFormat.format(endTime) + " " + formatter.format(endTime));
+        Log.d(TAG_F, "start Time " + startTime + " " + dateFormat.format(startTime) + " " + formatter.format(startTime));
+        Log.d(TAG_F, "end time " + endTime + " " + dateFormat.format(endTime) + " " + formatter.format(endTime));
 
 
         DataReadRequest readRequest = new DataReadRequest.Builder()
@@ -159,13 +160,13 @@ public class StatisticFragment extends Fragment {
                     public void onSuccess(DataReadResponse dataReadResponse) {
                         Log.d(LOG_TAG, "onSuccess()");
                         //txtFit.setText("Sucessfully got fit data\n");
-                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.toString());
-                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getStatus());
-                        Log.d("TAG_F", "onSuccess: 2calotry " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
-                        Log.d("TAG_F", "onSuccess: 2step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints());
+                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.toString());
+                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.getStatus());
+                        Log.d(TAG_F, "onSuccess: 2calotry " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
+                        Log.d(TAG_F, "onSuccess: 2step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints());
                         //Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
-                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getBuckets().get(0));
-                        Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
+                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.getBuckets().get(0));
+                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
 
 
                         SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
@@ -176,12 +177,12 @@ public class StatisticFragment extends Fragment {
                                 DateFormat dateFormat = getTimeInstance(DateFormat.LONG);
 
                                 for (DataPoint dp : dataSet.getDataPoints()) {
-                                    Log.d("TAG_F", "Data point:");
-                                    Log.d("TAG_F", "\tType: " + dp.getDataType().getName());
-                                    Log.d("TAG_F", "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
-                                    Log.d("TAG_F", "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+                                    Log.d(TAG_F, "Data point:");
+                                    Log.d(TAG_F, "\tType: " + dp.getDataType().getName());
+                                    Log.d(TAG_F, "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+                                    Log.d(TAG_F, "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
                                     for (Field field : dp.getDataType().getFields()) {
-                                        Log.i("TAG_F", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
+                                        Log.i(TAG_F, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         //txtFit.setText("step:" + dp.getValue(field));
                                         totalStep += dp.getValue(field).asInt();
 
@@ -190,7 +191,7 @@ public class StatisticFragment extends Fragment {
                             }
                         }
 
-                        Log.i("TAG_F", "Total step is " + String.valueOf(totalStep));
+                        Log.i(TAG_F, "Total step is " + String.valueOf(totalStep));
 
                     }
                 })
