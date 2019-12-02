@@ -15,6 +15,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.renderscript.Element;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -24,6 +25,10 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import bu.cs591.mosso.R;
+
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.fitness.FitnessOptions;
+import com.google.android.gms.fitness.data.DataType;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -94,6 +99,27 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
                 requestPermissions();
             }
         }
+
+
+        //check google fit permission
+        int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 11;
+        FitnessOptions fitnessOptions = FitnessOptions.builder()
+                .addDataType(DataType.TYPE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .addDataType(DataType.AGGREGATE_STEP_COUNT_DELTA, FitnessOptions.ACCESS_READ)
+                .build();
+        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
+
+            GoogleSignIn.requestPermissions(
+                    this, // your activity
+                    GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
+                    GoogleSignIn.getLastSignedInAccount(this),
+                    fitnessOptions);
+        }
+
+
+
+
+
     }
 
     @Override
