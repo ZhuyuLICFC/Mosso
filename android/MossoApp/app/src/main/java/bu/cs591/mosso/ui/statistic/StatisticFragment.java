@@ -49,6 +49,7 @@ import com.google.android.gms.tasks.Tasks;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -72,6 +73,8 @@ public class StatisticFragment extends Fragment {
             .build();
     int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 11;
     String LOG_TAG = "fit";
+
+    public int totalStep;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -97,6 +100,7 @@ public class StatisticFragment extends Fragment {
 //            accessGoogleFit();
 //            //readData();
 //        }
+        totalStep = 0;
         accessGoogleFit();
 
 
@@ -121,14 +125,21 @@ public class StatisticFragment extends Fragment {
 //    }
 
     //step 3 : access the google fit app data
-    private void accessGoogleFit() {
+    public void accessGoogleFit() {
         System.out.println("access");
         //txtFit.setText("access");
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         long endTime = cal.getTimeInMillis();
-        cal.add(Calendar.YEAR, -1);
+        cal.add(Calendar.MONTH, -1);
+        //cal.add(Calendar.YEAR, -1);
         long startTime = cal.getTimeInMillis();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+
+        DateFormat dateFormat = getTimeInstance(DateFormat.LONG);
+        System.out.println("start Time " + startTime + " " + dateFormat.format(startTime) + " " + formatter.format(startTime));
+        System.out.println("end time " + endTime + " " + dateFormat.format(endTime) + " " + formatter.format(endTime));
 
 
         DataReadRequest readRequest = new DataReadRequest.Builder()
@@ -156,23 +167,30 @@ public class StatisticFragment extends Fragment {
                         Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getBuckets().get(0));
                         Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
 
+
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+
                         for (Bucket bucket : dataReadResponse.getBuckets()) {
                             List<DataSet> dataSets = bucket.getDataSets();
                             for (DataSet dataSet : dataSets) {
-                                DateFormat dateFormat = getTimeInstance();
+                                DateFormat dateFormat = getTimeInstance(DateFormat.LONG);
 
                                 for (DataPoint dp : dataSet.getDataPoints()) {
                                     Log.d("TAG_F", "Data point:");
                                     Log.d("TAG_F", "\tType: " + dp.getDataType().getName());
-                                    Log.d("TAG_F", "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
-                                    Log.d("TAG_F", "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)));
+                                    Log.d("TAG_F", "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+                                    Log.d("TAG_F", "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
                                     for (Field field : dp.getDataType().getFields()) {
                                         Log.i("TAG_F", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         //txtFit.setText("step:" + dp.getValue(field));
+                                        totalStep += dp.getValue(field).asInt();
+
                                     }
                                 }
                             }
                         }
+
+                        Log.i("TAG_F", "Total step is " + String.valueOf(totalStep));
 
                     }
                 })
