@@ -11,11 +11,25 @@
         android:layout_width="match_parent"
         android:layout_height="270dp">
 
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="35dp"
+            android:background="@drawable/buttonaddstyle"
+            android:text="Add"
+            android:textColor="#fff" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="250dp"
             android:background="@drawable/gradientbackground"
             android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="50dp"
+                android:layout_height="36dp"
+                android:src="@drawable/ic_team_24px" />
 
             <ImageView
                 android:id="@+id/photo"
@@ -34,6 +48,11 @@
                 android:textSize="21sp"
                 android:textStyle="bold" />
         </LinearLayout>
+
+        <ImageView
+            android:layout_width="50dp"
+            android:layout_height="36dp"
+            android:src="@drawable/ic_emoji_events_24px"/>
     </RelativeLayout>
 
     <LinearLayout

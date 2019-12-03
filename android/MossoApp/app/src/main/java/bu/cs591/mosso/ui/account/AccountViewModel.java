@@ -32,10 +32,15 @@ public class AccountViewModel extends ViewModel {
 
     public AccountViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is account fragment");
 
         myAccount = new MutableLiveData<>();
         FirebaseUser fireUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (fireUser == null) {
+            Log.e("ACCOUNT_DEBUG", "fireUser is null?");
+        } else {
+            Log.i("ACCOUNT_DEBUG", fireUser.getUid());
+            Log.i("ACCOUNT_DEBUG", fireUser.getEmail());
+        }
         mUser = new User(fireUser.getDisplayName(),
                 fireUser.getEmail(), fireUser.getPhotoUrl());
         myAccount.setValue(mUser);
@@ -44,24 +49,24 @@ public class AccountViewModel extends ViewModel {
         // make query once
         db.collection("users").document(fireUser.getUid())
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
-                    @Override
-                    public void onComplete(@NonNull Task<DocumentSnapshot> task) {
-                        if (task.isSuccessful()) {
-                            DocumentSnapshot doc = task.getResult();
-                            if (doc.exists()) {
-                                mUser = new User(doc.getString("name"),
-                                        doc.getString("email"),
-                                        Uri.parse(doc.getString("photo")));
-                                myAccount.setValue(mUser);
-                            } else {
-                                addUser();
-                            }
-                        } else {
-                            Log.w("ACCOUNT_DEBUG", "Error getting documents.", task.getException());
-                            //addUser();
-                        }
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot doc = task.getResult();
+                    if (doc.exists()) {
+                        mUser = new User(doc.getString("name"),
+                                doc.getString("email"),
+                                Uri.parse(doc.getString("photo")));
+                        myAccount.setValue(mUser);
+                    } else {
+                        addUser();
                     }
-                });
+                } else {
+                    Log.w("ACCOUNT_DEBUG", "Error getting documents.", task.getException());
+                    //addUser();
+                }
+            }
+        });
     }
 
     private void addUser() {

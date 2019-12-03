@@ -94,7 +94,7 @@ public class MainActivity extends AppCompatActivity {
     TextView totalSteps;
     GoogleApiClient mGoogleApiClient;
 
-    Value steps;
+    Value step;
 
 
     @Override
@@ -203,7 +203,9 @@ public class MainActivity extends AppCompatActivity {
                                     for (Field field : dp.getDataType().getFields()) {
                                         Log.i("TAG_F", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         txtFit.setText("step:" + dp.getValue(field));
-
+                                        if (field.getName().equals("steps")){
+                                            step = dp.getValue(field);
+                                        }
                                     }
                                 }
                             }
@@ -440,13 +442,13 @@ public class MainActivity extends AppCompatActivity {
         dumpDataSet(dataSets.get(0));
     }
 
-//    private void setTotalSteps(){
-//        totalSteps.setText(steps + " steps today");
-//        final FitChart fitChart = (FitChart)findViewById(R.id.fitChart);
-//        fitChart.setMinValue(0f);
-//        fitChart.setMaxValue(10000f);
-//        fitChart.setValue(steps.asFloat());
-//    }
+    private void setTotalSteps(){
+        totalSteps.setText(step + " steps today");
+        final FitChart fitChart = (FitChart)findViewById(R.id.fitChart);
+        fitChart.setMinValue(0f);
+        fitChart.setMaxValue(10000f);
+        fitChart.setValue(step.asFloat());
+    }
 
 //    private void dumpDataSet(DataSet dataSet) {
 //        String TAG = "dumpData";
