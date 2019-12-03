@@ -13,7 +13,7 @@ import androidx.lifecycle.MutableLiveData;
 
 public class RunningRepo {
     private static final RunningRepo INSTANCE = new RunningRepo();
-    private static final float UPDATE_DIST_LIMIT = 5f;
+    private static final float UPDATE_DIST_LIMIT = 10f;
 
     private Location currLocation;
     private List<Location> locations;
