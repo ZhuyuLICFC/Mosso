@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.NonNull;
@@ -48,6 +49,7 @@ import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListe
 import com.google.android.gms.tasks.Tasks;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.txusballesteros.widgets.FitChart;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -65,6 +67,7 @@ import bu.cs591.mosso.R;
 public class StatisticFragment extends Fragment {
 
     private StatisticViewModel statisticViewModel;
+    TextView totalSteps;
 
     //get fitness data option
     FitnessOptions fitnessOptions = FitnessOptions.builder()
@@ -82,13 +85,6 @@ public class StatisticFragment extends Fragment {
         statisticViewModel =
                 ViewModelProviders.of(this).get(StatisticViewModel.class);
         View root = inflater.inflate(R.layout.fragment_statistic, container, false);
-        final TextView textView = root.findViewById(R.id.text_statistic);
-        statisticViewModel.getText().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
 
 //        if (!GoogleSignIn.hasPermissions(GoogleSignIn.getLastSignedInAccount(this), fitnessOptions)) {
 //
@@ -102,6 +98,7 @@ public class StatisticFragment extends Fragment {
 //            //readData();
 //        }
         totalStep = 0;
+        totalSteps = (TextView) root.findViewById(R.id.totalSteps);
         accessGoogleFit();
 
 
@@ -192,6 +189,7 @@ public class StatisticFragment extends Fragment {
                         }
 
                         Log.i(TAG_F, "Total step is " + String.valueOf(totalStep));
+                        setTotalSteps();
 
                     }
                 })
@@ -207,5 +205,14 @@ public class StatisticFragment extends Fragment {
                         Log.d(LOG_TAG, "onComplete()");
                     }
                 });
+    }
+
+    private void setTotalSteps(){
+        Toast.makeText(getActivity(),"Successfully get fit data", Toast.LENGTH_LONG ).show();
+        totalSteps.setText(totalStep + " steps today");
+        final FitChart fitChart = (FitChart)getActivity().findViewById(R.id.fitChart);
+        fitChart.setMinValue(0f);
+        fitChart.setMaxValue(10000f);
+        fitChart.setValue((float)totalStep);
     }
 }

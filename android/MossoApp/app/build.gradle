@@ -50,6 +50,7 @@ dependencies {
     compile 'com.google.android.gms:play-services-auth:17.0.0'
 
     implementation 'com.squareup.picasso:picasso:2.71828'
+    implementation 'com.txusballesteros:FitChart:1.0'
 }
 
 apply plugin: 'com.google.gms.google-services'
