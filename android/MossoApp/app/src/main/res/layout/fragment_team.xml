@@ -82,7 +82,7 @@
                 android:textColor="#FFF"
                 android:textSize="21sp"
                 android:textStyle="bold" />
-            
+
         </LinearLayout>
         <ScrollView
             android:layout_width="match_parent"
