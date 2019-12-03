@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -29,6 +30,7 @@ import com.google.android.gms.fitness.data.DataPoint;
 import com.google.android.gms.fitness.data.DataSet;
 import com.google.android.gms.fitness.data.DataType;
 import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.data.Value;
 import com.google.android.gms.fitness.request.DataReadRequest;
 import com.google.android.gms.fitness.result.DailyTotalResult;
 import com.google.android.gms.fitness.result.DataReadResponse;
@@ -40,6 +42,7 @@ import com.google.android.gms.tasks.Task;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
 import com.google.android.gms.tasks.Tasks;
+import com.txusballesteros.widgets.FitChart;
 
 //import com.google.android.gms.drive.Drive;
 
@@ -88,7 +91,10 @@ public class MainActivity extends AppCompatActivity {
     static final String TAG = "Tag";
 
     TextView txtFit;
+    TextView totalSteps;
     GoogleApiClient mGoogleApiClient;
+
+    Value steps;
 
 
     @Override
@@ -98,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         System.out.println("aapp");
 
         txtFit = (TextView) findViewById(R.id.txtFit);
-
+        totalSteps = (TextView) findViewById(R.id.totalSteps);
 
 //        mGoogleApiClient = new GoogleApiClient.Builder(this)
 //                .enableAutoManage(this /* FragmentActivity */,
@@ -118,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
                     GOOGLE_FIT_PERMISSIONS_REQUEST_CODE,
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
-            txtFit.setText("aaa");
+            Toast.makeText(this,"No permission", Toast.LENGTH_SHORT).show();
         } else {
             accessGoogleFit();
             //readData();
@@ -151,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
     //step 3 : access the google fit app data
     private void accessGoogleFit() {
         System.out.println("access");
-        txtFit.setText("access");
+        Toast.makeText(this,"access", Toast.LENGTH_SHORT).show();
         Calendar cal = Calendar.getInstance();
         cal.setTime(new Date());
         long endTime = cal.getTimeInMillis();
@@ -174,7 +180,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(DataReadResponse dataReadResponse) {
                         Log.d(LOG_TAG, "onSuccess()");
-                        txtFit.setText("Sucessfully got fit data\n");
+                        Toast.makeText(getApplicationContext(),"Sucessfully got fit data\n", Toast.LENGTH_LONG).show();
+//                        setTotalSteps();
                         Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.toString());
                         Log.d("TAG_F", "onSuccess: 2 " + dataReadResponse.getStatus());
                         Log.d("TAG_F", "onSuccess: 2calotry " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
@@ -196,6 +203,7 @@ public class MainActivity extends AppCompatActivity {
                                     for (Field field : dp.getDataType().getFields()) {
                                         Log.i("TAG_F", "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         txtFit.setText("step:" + dp.getValue(field));
+
                                     }
                                 }
                             }
@@ -431,6 +439,14 @@ public class MainActivity extends AppCompatActivity {
         txtFit.setText(dataSets.size());
         dumpDataSet(dataSets.get(0));
     }
+
+//    private void setTotalSteps(){
+//        totalSteps.setText(steps + " steps today");
+//        final FitChart fitChart = (FitChart)findViewById(R.id.fitChart);
+//        fitChart.setMinValue(0f);
+//        fitChart.setMaxValue(10000f);
+//        fitChart.setValue(steps.asFloat());
+//    }
 
 //    private void dumpDataSet(DataSet dataSet) {
 //        String TAG = "dumpData";

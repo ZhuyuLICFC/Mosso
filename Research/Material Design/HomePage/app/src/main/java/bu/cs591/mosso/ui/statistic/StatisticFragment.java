@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
+import androidx.recyclerview.widget.RecyclerView;
 import bu.cs591.mosso.R;
 
 public class StatisticFragment extends Fragment {
@@ -23,13 +24,7 @@ public class StatisticFragment extends Fragment {
         statisticViewModel =
                 ViewModelProviders.of(this).get(StatisticViewModel.class);
         View root = inflater.inflate(R.layout.fragment_statistic, container, false);
-        final TextView textView = root.findViewById(R.id.text_statistic);
-        statisticViewModel.getText().observe(this, new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });
+
         return root;
     }
 }

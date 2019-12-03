@@ -32,7 +32,6 @@ public class AccountViewModel extends ViewModel {
 
     public AccountViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is account fragment");
 
         myAccount = new MutableLiveData<>();
         FirebaseUser fireUser = FirebaseAuth.getInstance().getCurrentUser();
