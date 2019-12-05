@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
@@ -30,6 +32,8 @@ import bu.cs591.mosso.BuildConfig;
 import bu.cs591.mosso.LocationUpdatesService;
 import bu.cs591.mosso.MainActivity;
 import bu.cs591.mosso.R;
+
+import com.aconcepcion.geofencemarkerbuilder.MarkerBuilderManagerV2;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -43,6 +47,10 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +62,8 @@ import androidx.fragment.app.Fragment;
 import bu.cs591.mosso.Utils;
 import bu.cs591.mosso.db.MapMarker;
 import bu.cs591.mosso.db.RunningRepo;
+import bu.cs591.mosso.db.User;
+import bu.cs591.mosso.ui.account.AccountViewModel;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
@@ -62,6 +72,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private Context mContext;
 
     private MapViewModel mViewModel;
+    private AccountViewModel aViewModel;
 
     private RunningRepo myRepo;
 
@@ -101,6 +112,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     private Observer<List<Location>> locationObserver;
 
+    private MarkerBuilderManagerV2 markerBuilderManager;
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -109,6 +122,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         mListener = (MapFragmentListener) context;
         markers = new ArrayList<>();
         myRepo = RunningRepo.getInstance();
+
         locationManager = (LocationManager)mContext.getSystemService(Context.LOCATION_SERVICE);
         locationObserver = new Observer<List<Location>>() {
             @Override
@@ -128,6 +142,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
         // instantiate the view model
         mViewModel = ViewModelProviders.of(this).get(MapViewModel.class);
+        aViewModel = ViewModelProviders.of(this).get(AccountViewModel.class);
 
         // inflate the map fragment and start initialize the map
         SupportMapFragment mapFragment =
@@ -195,6 +210,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                         .snippet(marker.getTimestamp())
                         .visible(true)));
                 }
+                markerBuilderManager = new MarkerBuilderManagerV2.Builder(getActivity())
+                        .map(mMap)
+                        .enabled(true)
+                        .radius(200)
+                        .fillColor(Color.BLUE)
+                        .centerBitmap(getBitmapFromURL(aViewModel.getCurrentAccount().getValue().photoUrl.getPath()))
+                        .build();
             }
         });
 
@@ -391,5 +413,20 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                 return super.onContextItemSelected(item);
         }
 
+    }
+
+    public static Bitmap getBitmapFromURL(String src) {
+        try {
+            URL url = new URL(src);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoInput(true);
+            connection.connect();
+            InputStream input = connection.getInputStream();
+            Bitmap myBitmap = BitmapFactory.decodeStream(input);
+            return myBitmap;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
