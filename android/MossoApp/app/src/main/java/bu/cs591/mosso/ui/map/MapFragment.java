@@ -10,7 +10,14 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -33,11 +40,11 @@ import bu.cs591.mosso.LocationUpdatesService;
 import bu.cs591.mosso.MainActivity;
 import bu.cs591.mosso.R;
 
-import com.aconcepcion.geofencemarkerbuilder.MarkerBuilderManagerV2;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -46,6 +53,7 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,8 +80,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private Context mContext;
 
     private MapViewModel mViewModel;
-    private AccountViewModel aViewModel;
-
     private RunningRepo myRepo;
 
     public interface MapFragmentListener {
@@ -112,7 +118,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     private Observer<List<Location>> locationObserver;
 
-    private MarkerBuilderManagerV2 markerBuilderManager;
 
     @Override
     public void onAttach(Context context) {
@@ -142,7 +147,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
         // instantiate the view model
         mViewModel = ViewModelProviders.of(this).get(MapViewModel.class);
-        aViewModel = ViewModelProviders.of(this).get(AccountViewModel.class);
 
         // inflate the map fragment and start initialize the map
         SupportMapFragment mapFragment =
@@ -204,19 +208,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                 clearMarkers();
                 // iterate every new marker and add it to the map
                 for (MapMarker marker : mapMarkers) {
-                    markers.add(mMap.addMarker(new MarkerOptions()
-                        .position(marker.getLatLng())
-                        .title(marker.getUsername())
-                        .snippet(marker.getTimestamp())
-                        .visible(true)));
+                    LatLng latLng = new LatLng(marker.getLatLng().latitude, marker.getLatLng().longitude);
+                    MarkerOptions options = new MarkerOptions().position(latLng);
+                    Bitmap bitmap = createUserBitmapRed();
+                    //if team Blue, Bitmap bitmap = createUserBitmapBlue();
+                    if(bitmap!=null){
+                        options.title(marker.getUsername());
+                        options.icon(BitmapDescriptorFactory.fromBitmap(bitmap)).snippet(marker.getTimestamp());
+                        markers.add(mMap.addMarker(options));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+                    }
                 }
-                markerBuilderManager = new MarkerBuilderManagerV2.Builder(getActivity())
-                        .map(mMap)
-                        .enabled(true)
-                        .radius(200)
-                        .fillColor(Color.BLUE)
-                        .centerBitmap(getBitmapFromURL(aViewModel.getCurrentAccount().getValue().photoUrl.getPath()))
-                        .build();
+
             }
         });
 
@@ -415,18 +419,84 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     }
 
-    public static Bitmap getBitmapFromURL(String src) {
+    private Bitmap createUserBitmapRed() {
+        Bitmap result = null;
         try {
-            URL url = new URL(src);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setDoInput(true);
-            connection.connect();
-            InputStream input = connection.getInputStream();
-            Bitmap myBitmap = BitmapFactory.decodeStream(input);
-            return myBitmap;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
+            result = Bitmap.createBitmap(dp(62), dp(76), Bitmap.Config.ARGB_8888);
+            result.eraseColor(Color.TRANSPARENT);
+            Canvas canvas = new Canvas(result);
+            Drawable drawable = getResources().getDrawable(R.drawable.livepin_red);
+            drawable.setBounds(0, 0, dp(62), dp(76));
+            drawable.draw(canvas);
+
+            Paint roundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            RectF bitmapRect = new RectF();
+            canvas.save();
+
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+            //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
+            if (bitmap != null) {
+                BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+                Matrix matrix = new Matrix();
+                float scale = dp(52) / (float) bitmap.getWidth();
+                matrix.postTranslate(dp(5), dp(5));
+                matrix.postScale(scale, scale);
+                roundPaint.setShader(shader);
+                shader.setLocalMatrix(matrix);
+                bitmapRect.set(dp(9), dp(9), dp(52+1), dp(52+1));
+                canvas.drawRoundRect(bitmapRect, dp(26), dp(26), roundPaint);
+            }
+            canvas.restore();
+            try {
+                canvas.setBitmap(null);
+            } catch (Exception e) {}
+        } catch (Throwable t) {
+            t.printStackTrace();
         }
+        return result;
+    }
+
+    private Bitmap createUserBitmapBlue() {
+        Bitmap result = null;
+        try {
+            result = Bitmap.createBitmap(dp(62), dp(76), Bitmap.Config.ARGB_8888);
+            result.eraseColor(Color.TRANSPARENT);
+            Canvas canvas = new Canvas(result);
+            Drawable drawable = getResources().getDrawable(R.drawable.livepin_blue);
+            drawable.setBounds(0, 0, dp(62), dp(76));
+            drawable.draw(canvas);
+
+            Paint roundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            RectF bitmapRect = new RectF();
+            canvas.save();
+
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+            //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
+            if (bitmap != null) {
+                BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+                Matrix matrix = new Matrix();
+                float scale = dp(52) / (float) bitmap.getWidth();
+                matrix.postTranslate(dp(5), dp(5));
+                matrix.postScale(scale, scale);
+                roundPaint.setShader(shader);
+                shader.setLocalMatrix(matrix);
+                bitmapRect.set(dp(9), dp(9), dp(52+1), dp(52+1));
+                canvas.drawRoundRect(bitmapRect, dp(26), dp(26), roundPaint);
+            }
+            canvas.restore();
+            try {
+                canvas.setBitmap(null);
+            } catch (Exception e) {}
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        return result;
+    }
+
+    public int dp(float value) {
+        if (value == 0) {
+            return 0;
+        }
+        return (int) Math.ceil(getResources().getDisplayMetrics().density * value);
     }
 }
