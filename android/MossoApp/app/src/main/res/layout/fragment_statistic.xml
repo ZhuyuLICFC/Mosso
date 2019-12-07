@@ -48,17 +48,21 @@
     </FrameLayout>
 
     <TextView
+        android:id="@+id/totalCalories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:textColor="#212121"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <TextView
         android:id="@+id/txtFit"
         android:layout_width="106dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="164dp"
         android:layout_marginTop="172dp"
         android:layout_marginLeft="164dp" />
-
-    <TextView
-        android:id="@+id/totalCalories"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
 
 </LinearLayout>
