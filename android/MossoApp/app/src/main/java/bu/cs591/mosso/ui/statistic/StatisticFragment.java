@@ -84,10 +84,11 @@ public class StatisticFragment extends Fragment {
     String LOG_TAG = "fit";
     String TAG_F = "GoogleFitData";
 
-    public int totalStep;
-    public int stepToday;
-    public int caloryToday;
-    public int distanceToday;
+    int totalStep;
+    int sensorStep;
+    int caloryToday;
+    int distanceToday;
+    int sensorCalory;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -106,8 +107,12 @@ public class StatisticFragment extends Fragment {
 //            accessGoogleFit();
 //            //readData();
 //        }
-        totalStep = 0;
-        FitData.setStep(totalStep);
+        //totalStep = FitData.getFitStep();
+        totalStep = 0;//read from fit api every time
+        caloryToday = 0;
+        sensorStep = FitData.getSensorStep();
+        sensorCalory = FitData.getSensorCalory();
+        //FitData.setStep(totalStep);
         totalSteps = (TextView) root.findViewById(R.id.totalSteps);
         totalCalories = (TextView) root.findViewById(R.id.totalCalories);
         accessGoogleFit();
@@ -116,9 +121,10 @@ public class StatisticFragment extends Fragment {
         stepButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                totalStep += 3;
-                caloryToday += 1;
-                FitData.setStep(totalStep);
+                sensorStep += 3;
+                sensorCalory += 1;
+                FitData.setSensorStep(sensorStep);
+                FitData.setSensorCalory(sensorCalory);
                 setTotalSteps();
             }
         });
@@ -205,7 +211,7 @@ public class StatisticFragment extends Fragment {
                                         Log.i(TAG_F, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         //txtFit.setText("step:" + dp.getValue(field));
                                         totalStep += dp.getValue(field).asInt();
-                                        FitData.setStep(totalStep);
+                                        FitData.setFitStep(totalStep);
 
                                     }
                                 }
@@ -275,7 +281,7 @@ public class StatisticFragment extends Fragment {
                                         Log.i(TAG_F, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         //txtFit.setText("step:" + dp.getValue(field));
                                         caloryToday += (int)dp.getValue(field).asFloat();
-                                        FitData.setCalory(caloryToday);
+                                        FitData.setFitCalory(caloryToday);
 
                                     }
                                 }
