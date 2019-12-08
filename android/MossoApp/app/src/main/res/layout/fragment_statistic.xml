@@ -58,10 +58,10 @@
         android:textStyle="bold" />
 
     <Button
-        android:id="@+id/cheatButton"
+        android:id="@+id/stepButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="invisible"
+        android:alpha="0"
         android:text="+1" />
 
     <TextView

@@ -8,6 +8,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -71,6 +72,7 @@ public class StatisticFragment extends Fragment {
     private StatisticViewModel statisticViewModel;
     TextView totalSteps;
     TextView totalCalories;
+    Button stepButton;
 
     //get fitness data option
     FitnessOptions fitnessOptions = FitnessOptions.builder()
@@ -107,6 +109,16 @@ public class StatisticFragment extends Fragment {
         totalSteps = (TextView) root.findViewById(R.id.totalSteps);
         totalCalories = (TextView) root.findViewById(R.id.totalCalories);
         accessGoogleFit();
+
+        stepButton = (Button) root.findViewById(R.id.stepButton);
+        stepButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                totalStep += 3;
+                caloryToday += 1;
+                setTotalSteps();
+            }
+        });
 
 
         return root;
