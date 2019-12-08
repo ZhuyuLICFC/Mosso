@@ -22,6 +22,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import bu.cs591.mosso.db.MapMarker;
+import bu.cs591.mosso.db.User;
 
 public class MapViewModel extends ViewModel {
     private List<MapMarker> markerList;

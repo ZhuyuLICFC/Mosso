@@ -8,7 +8,16 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.BitmapShader;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.RectF;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
@@ -30,10 +39,12 @@ import bu.cs591.mosso.BuildConfig;
 import bu.cs591.mosso.LocationUpdatesService;
 import bu.cs591.mosso.MainActivity;
 import bu.cs591.mosso.R;
+
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
@@ -43,6 +54,11 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -54,6 +70,8 @@ import androidx.fragment.app.Fragment;
 import bu.cs591.mosso.Utils;
 import bu.cs591.mosso.db.MapMarker;
 import bu.cs591.mosso.db.RunningRepo;
+import bu.cs591.mosso.db.User;
+import bu.cs591.mosso.ui.account.AccountViewModel;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
@@ -62,7 +80,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private Context mContext;
 
     private MapViewModel mViewModel;
-
     private RunningRepo myRepo;
 
     public interface MapFragmentListener {
@@ -101,6 +118,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
     private Observer<List<Location>> locationObserver;
 
+
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
@@ -109,6 +127,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         mListener = (MapFragmentListener) context;
         markers = new ArrayList<>();
         myRepo = RunningRepo.getInstance();
+
         locationManager = (LocationManager)mContext.getSystemService(Context.LOCATION_SERVICE);
         locationObserver = new Observer<List<Location>>() {
             @Override
@@ -189,12 +208,19 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                 clearMarkers();
                 // iterate every new marker and add it to the map
                 for (MapMarker marker : mapMarkers) {
-                    markers.add(mMap.addMarker(new MarkerOptions()
-                        .position(marker.getLatLng())
-                        .title(marker.getUsername())
-                        .snippet(marker.getTimestamp())
-                        .visible(true)));
+                    LatLng latLng = new LatLng(marker.getLatLng().latitude, marker.getLatLng().longitude);
+                    MarkerOptions options = new MarkerOptions().position(latLng);
+                    Bitmap bitmap = createUserBitmapRed();
+                    //if team Blue, Bitmap bitmap = createUserBitmapBlue();
+                    if(bitmap!=null){
+                        options.title(marker.getUsername());
+                        options.icon(BitmapDescriptorFactory.fromBitmap(bitmap)).snippet(marker.getTimestamp());
+                        markers.add(mMap.addMarker(options));
+                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
+                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+                    }
                 }
+
             }
         });
 
@@ -391,5 +417,86 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                 return super.onContextItemSelected(item);
         }
 
+    }
+
+    private Bitmap createUserBitmapRed() {
+        Bitmap result = null;
+        try {
+            result = Bitmap.createBitmap(dp(62), dp(76), Bitmap.Config.ARGB_8888);
+            result.eraseColor(Color.TRANSPARENT);
+            Canvas canvas = new Canvas(result);
+            Drawable drawable = getResources().getDrawable(R.drawable.livepin_red);
+            drawable.setBounds(0, 0, dp(62), dp(76));
+            drawable.draw(canvas);
+
+            Paint roundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            RectF bitmapRect = new RectF();
+            canvas.save();
+
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+            //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
+            if (bitmap != null) {
+                BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+                Matrix matrix = new Matrix();
+                float scale = dp(52) / (float) bitmap.getWidth();
+                matrix.postTranslate(dp(5), dp(5));
+                matrix.postScale(scale, scale);
+                roundPaint.setShader(shader);
+                shader.setLocalMatrix(matrix);
+                bitmapRect.set(dp(9), dp(9), dp(52+1), dp(52+1));
+                canvas.drawRoundRect(bitmapRect, dp(26), dp(26), roundPaint);
+            }
+            canvas.restore();
+            try {
+                canvas.setBitmap(null);
+            } catch (Exception e) {}
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        return result;
+    }
+
+    private Bitmap createUserBitmapBlue() {
+        Bitmap result = null;
+        try {
+            result = Bitmap.createBitmap(dp(62), dp(76), Bitmap.Config.ARGB_8888);
+            result.eraseColor(Color.TRANSPARENT);
+            Canvas canvas = new Canvas(result);
+            Drawable drawable = getResources().getDrawable(R.drawable.livepin_blue);
+            drawable.setBounds(0, 0, dp(62), dp(76));
+            drawable.draw(canvas);
+
+            Paint roundPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            RectF bitmapRect = new RectF();
+            canvas.save();
+
+            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+            //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
+            if (bitmap != null) {
+                BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
+                Matrix matrix = new Matrix();
+                float scale = dp(52) / (float) bitmap.getWidth();
+                matrix.postTranslate(dp(5), dp(5));
+                matrix.postScale(scale, scale);
+                roundPaint.setShader(shader);
+                shader.setLocalMatrix(matrix);
+                bitmapRect.set(dp(9), dp(9), dp(52+1), dp(52+1));
+                canvas.drawRoundRect(bitmapRect, dp(26), dp(26), roundPaint);
+            }
+            canvas.restore();
+            try {
+                canvas.setBitmap(null);
+            } catch (Exception e) {}
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+        return result;
+    }
+
+    public int dp(float value) {
+        if (value == 0) {
+            return 0;
+        }
+        return (int) Math.ceil(getResources().getDisplayMetrics().density * value);
     }
 }

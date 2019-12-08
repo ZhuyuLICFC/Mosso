@@ -48,6 +48,23 @@
     </FrameLayout>
 
     <TextView
+        android:id="@+id/totalCalories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginTop="20dp"
+        android:textColor="#212121"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/cheatButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"
+        android:text="+1" />
+
+    <TextView
         android:id="@+id/txtFit"
         android:layout_width="106dp"
         android:layout_height="wrap_content"
