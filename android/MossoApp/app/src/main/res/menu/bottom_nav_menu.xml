@@ -7,9 +7,9 @@
         android:title="Friend" />
 
     <item
-        android:id="@+id/navigation_team"
+        android:id="@+id/navigation_history"
         android:icon="@drawable/ic_team_24px"
-        android:title="Team" />
+        android:title="History" />
 
     <item
         android:id="@+id/navigation_map"

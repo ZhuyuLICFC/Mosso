@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:background="@color/cardview_dark_background">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
+        <TextView
+            android:id="@+id/tvHistoryTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:text="12/07/2019"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvHistorySubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Saturday"
+            android:textSize="17sp"
+            app:layout_constraintStart_toStartOf="@+id/tvHistoryTitle"
+            app:layout_constraintTop_toBottomOf="@+id/tvHistoryTitle" />
+
+        <TextView
+            android:id="@+id/laHistoryDIstance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Distance"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toStartOf="@+id/lbHistorySpeed"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ivHistoryTrack" />
+
+        <TextView
+            android:id="@+id/lbHistorySpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Speed"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toStartOf="@+id/lbHistoryDuration"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/laHistoryDIstance"
+            app:layout_constraintTop_toTopOf="@+id/laHistoryDIstance" />
+
+        <TextView
+            android:id="@+id/lbHistoryDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Duration"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toEndOf="@+id/lbHistorySpeed"
+            app:layout_constraintTop_toTopOf="@+id/laHistoryDIstance" />
+
+        <TextView
+            android:id="@+id/tvHistoryDistance"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="400 m"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="@+id/laHistoryDIstance"
+            app:layout_constraintStart_toStartOf="@+id/laHistoryDIstance"
+            app:layout_constraintTop_toBottomOf="@+id/laHistoryDIstance" />
+
+        <TextView
+            android:id="@+id/tvHistorySpeed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="7 min/km"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="@+id/lbHistorySpeed"
+            app:layout_constraintStart_toStartOf="@+id/lbHistorySpeed"
+            app:layout_constraintTop_toTopOf="@+id/tvHistoryDistance" />
+
+        <TextView
+            android:id="@+id/tvHistoryDuration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="30:51"
+            android:textSize="17sp"
+            app:layout_constraintEnd_toEndOf="@+id/lbHistoryDuration"
+            app:layout_constraintStart_toStartOf="@+id/lbHistoryDuration"
+            app:layout_constraintTop_toTopOf="@+id/tvHistoryDistance" />
+
+        <ImageView
+            android:id="@+id/ivHistoryTrack"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            android:background="@color/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvHistorySubtitle"
+            app:srcCompat="@android:color/holo_blue_dark" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>

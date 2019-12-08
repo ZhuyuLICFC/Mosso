@@ -12,10 +12,10 @@
         tools:layout="@layout/fragment_friend" />
 
     <fragment
-        android:id="@+id/navigation_team"
-        android:name="bu.cs591.mosso.ui.team.TeamFragment"
+        android:id="@+id/navigation_history"
+        android:name="bu.cs591.mosso.ui.history.HistoryFragment"
         android:label="@string/title_team"
-        tools:layout="@layout/fragment_team" />
+        tools:layout="@layout/fragment_history" />
 
     <fragment
         android:id="@+id/navigation_map"
