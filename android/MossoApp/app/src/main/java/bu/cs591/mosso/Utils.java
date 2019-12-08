@@ -44,4 +44,11 @@ public class Utils {
         return context.getString(R.string.location_updated,
                 DateFormat.getDateTimeInstance().format(new Date()));
     }
+
+    /*
+     * return the current user's step count
+     */
+    public static int getStep() {
+        return FitData.getStep();
+    }
 }

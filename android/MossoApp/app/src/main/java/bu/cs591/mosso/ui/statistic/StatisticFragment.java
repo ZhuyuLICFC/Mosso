@@ -65,6 +65,7 @@ import static java.text.DateFormat.getDateInstance;
 import static java.text.DateFormat.getTimeInstance;
 
 
+import bu.cs591.mosso.FitData;
 import bu.cs591.mosso.R;
 
 public class StatisticFragment extends Fragment {
@@ -106,6 +107,7 @@ public class StatisticFragment extends Fragment {
 //            //readData();
 //        }
         totalStep = 0;
+        FitData.setStep(totalStep);
         totalSteps = (TextView) root.findViewById(R.id.totalSteps);
         totalCalories = (TextView) root.findViewById(R.id.totalCalories);
         accessGoogleFit();
@@ -116,6 +118,7 @@ public class StatisticFragment extends Fragment {
             public void onClick(View view) {
                 totalStep += 3;
                 caloryToday += 1;
+                FitData.setStep(totalStep);
                 setTotalSteps();
             }
         });
@@ -202,6 +205,7 @@ public class StatisticFragment extends Fragment {
                                         Log.i(TAG_F, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         //txtFit.setText("step:" + dp.getValue(field));
                                         totalStep += dp.getValue(field).asInt();
+                                        FitData.setStep(totalStep);
 
                                     }
                                 }
@@ -271,6 +275,7 @@ public class StatisticFragment extends Fragment {
                                         Log.i(TAG_F, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
                                         //txtFit.setText("step:" + dp.getValue(field));
                                         caloryToday += (int)dp.getValue(field).asFloat();
+                                        FitData.setCalory(caloryToday);
 
                                     }
                                 }
@@ -371,12 +376,12 @@ public class StatisticFragment extends Fragment {
 
     private void setTotalSteps(){
         Toast.makeText(getActivity(),"Successfully get fit data", Toast.LENGTH_LONG ).show();
-        totalSteps.setText(totalStep + " steps today");
+        totalSteps.setText(FitData.getStep() + " steps today");
         final FitChart fitChart = (FitChart)getActivity().findViewById(R.id.fitChart);
         fitChart.setMinValue(0f);
         fitChart.setMaxValue(10000f);
-        fitChart.setValue((float)totalStep);
+        fitChart.setValue((float)FitData.getStep());
 
-        totalCalories.setText("Total Calories today : " + caloryToday);
+        totalCalories.setText("Total Calories today : " + FitData.getCalory());
     }
 }
