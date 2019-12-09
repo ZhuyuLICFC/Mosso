@@ -41,14 +41,20 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import bu.cs591.mosso.entity.BasicUser;
 import bu.cs591.mosso.entity.CurrentUser;
+import bu.cs591.mosso.entity.MarkerInfo;
+import bu.cs591.mosso.entity.RunningParam;
+import bu.cs591.mosso.lambda.LambdaClient;
 import bu.cs591.mosso.ui.map.MapFragment;
 
 public class MainActivity extends AppCompatActivity implements MapFragment.MapFragmentListener {
@@ -112,7 +118,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
             }
         }
 
-
         //check google fit permission
         int GOOGLE_FIT_PERMISSIONS_REQUEST_CODE = 11;
         FitnessOptions fitnessOptions = FitnessOptions.builder()
@@ -128,6 +133,14 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
                     fitnessOptions);
         }
 
+        // singleton initialization
+        LambdaClient.generateInstance(getApplicationContext());
+        Map<String, MarkerInfo> markersInfo = new HashMap<>();
+        Log.d("testo", CurrentUser.getInstance().toString());
+        for (Map.Entry<String, BasicUser> entry : CurrentUser.getInstance().getFriends().entrySet()) {
+            markersInfo.put(entry.getKey(), new MarkerInfo(entry.getKey(), null, FitData.getFitStep(), entry.getValue().getTeam(), -1, entry.getValue().getBitmap()));
+        }
+        RunningParam.setInstance(null, markersInfo);
     }
 
     @Override

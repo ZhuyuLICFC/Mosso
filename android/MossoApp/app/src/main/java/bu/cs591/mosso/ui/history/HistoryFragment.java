@@ -40,20 +40,21 @@ public class HistoryFragment extends Fragment {
 
         recyclerView = root.findViewById(R.id.history_recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager((getActivity().getApplicationContext())));
+        recyclerView.setAdapter(new RunningRecordAdapter(RunningRecord.runningRecords));
 
-        historyViewModel.getLiveUsers().observe(this, new Observer<List<RunningRecord>>() {
-            @Override
-            public void onChanged(List<RunningRecord> runningRecords) {
-                recyclerView.setAdapter(new RunningRecordAdapter(runningRecords));
-            }
-        });
+//        historyViewModel.getLiveUsers().observe(this, new Observer<List<RunningRecord>>() {
+//            @Override
+//            public void onChanged(List<RunningRecord> runningRecords) {
+//                recyclerView.setAdapter(new RunningRecordAdapter(runningRecords));
+//            }
+//        });
 
         return root;
     }
 
     private class RecordHolder extends RecyclerView.ViewHolder{
 
-        //ImageView imgEpisode;
+        ImageView tvTrack;
         TextView tvDuration;
         TextView tvDate;
         TextView tvWeekNo;
@@ -62,7 +63,7 @@ public class HistoryFragment extends Fragment {
 
         public RecordHolder(View itemView) {
             super(itemView);
-            //imgEpisode = itemView.findViewById(R.id.record);
+            tvTrack = itemView.findViewById(R.id.ivHistoryTrack);
             tvDate = itemView.findViewById(R.id.tvHistoryTitle);
             tvDuration = itemView.findViewById(R.id.tvHistoryDuration);
             tvSpeed = itemView.findViewById(R.id.tvHistorySpeed);
@@ -71,7 +72,7 @@ public class HistoryFragment extends Fragment {
         }
 
         public void bindRecord(final RunningRecord runningRecord) {
-            //imgEpisode.setImageBitmap(runningRecord.getRunningRoute());
+            tvTrack.setImageBitmap(runningRecord.getRunningRoute());
             tvDate.setText(DateHelper.getDateInfo(runningRecord.getDate()));
             tvWeekNo.setText(runningRecord.getDayInWeek());
             tvDistance.setText(runningRecord.getDistance());

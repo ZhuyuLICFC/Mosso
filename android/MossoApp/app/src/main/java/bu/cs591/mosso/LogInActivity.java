@@ -4,8 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,18 +25,26 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.firestore.core.Query;
+import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import bu.cs591.mosso.R;
 import bu.cs591.mosso.db.User;
+import bu.cs591.mosso.entity.BasicUser;
 import bu.cs591.mosso.entity.CurrentUser;
 
 public class LogInActivity extends AppCompatActivity {
 
+    public static AtomicInteger cnt = new AtomicInteger(0);
+    public static int total = -1;
     private Button btnSignIn;
     private static final int RC_SIGN_IN = 123;
 
@@ -93,22 +104,52 @@ public class LogInActivity extends AppCompatActivity {
 
     private void login() {
         prepareUser();
-        Intent intent = new Intent(this, MainActivity.class);
-        startActivity(intent);
     }
 
     private void prepareUser() {
+
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        final List<String> emails = new ArrayList<>();
+        final Map<String, BasicUser> friendsInfo = new HashMap<>();
         db.collection("users").get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
+                Log.d("testo", task.isSuccessful() + "");
                 if (task.isSuccessful()) {
+                    total = task.getResult().size();
                     for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
                         if (queryDocumentSnapshot.getString("email").equals(firebaseUser.getEmail())) continue;
-                        emails.add(queryDocumentSnapshot.getString("email"));
+                        else {
+                            Picasso.get().load(queryDocumentSnapshot.getString(("photo"))).into(new Target() {
+                                @Override
+                                public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+                                    Log.d("testo", "dive in");
+                                    friendsInfo.put(queryDocumentSnapshot.getString( "email"), new BasicUser(queryDocumentSnapshot.getString("email"),
+                                            queryDocumentSnapshot.getId(),
+                                            queryDocumentSnapshot.getString("name"),
+                                            queryDocumentSnapshot.getString("team"),
+                                            bitmap));
+                                    LogInActivity.cnt.incrementAndGet();
+                                    if (cnt.get() == total - 1) {
+                                        Intent intent = new Intent(LogInActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                    }
+
+                                }
+
+                                @Override
+                                public void onBitmapFailed(Exception e, Drawable errorDrawable) {
+
+                                }
+
+                                @Override
+                                public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+                                }
+                            });
+                        }
                     }
+                } else {
                 }
             }
         });
@@ -117,10 +158,11 @@ public class LogInActivity extends AppCompatActivity {
                 .get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                Log.d("testo", task.isSuccessful() + "");
                 if (task.isSuccessful()) {
                     DocumentSnapshot doc = task.getResult();
                     if (doc.exists()) {
-                        Log.d("testo", "Here");                        CurrentUser.setInstance(firebaseUser.getUid(), doc.getString("name"), firebaseUser.getEmail(), Uri.parse(doc.getString("photo")), emails);
+                        CurrentUser.setInstance(firebaseUser.getUid(), doc.getString("name"), firebaseUser.getEmail(), Uri.parse(doc.getString("photo")), friendsInfo, doc.getString("team"));
                     }
                     Log.w("ACCOUNT_DEBUG", "Error getting documents.", task.getException());
                 }

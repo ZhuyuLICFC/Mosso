@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Build;
 import android.os.Handler;
@@ -18,18 +19,30 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
+import com.amazonaws.mobileconnectors.lambdainvoker.LambdaFunctionException;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import bu.cs591.mosso.db.RunningRepo;
+import bu.cs591.mosso.entity.CurrentUser;
+import bu.cs591.mosso.entity.MarkerInfo;
+import bu.cs591.mosso.entity.RunningParam;
+import bu.cs591.mosso.lambda.LambdaClient;
+import bu.cs591.mosso.lambda.RequestClass;
+import bu.cs591.mosso.lambda.ResponseClass;
+import bu.cs591.mosso.ui.map.MapViewModel;
 
 public class LocationUpdatesService extends Service {
     private static final String PACKAGE_NAME = "bu.cs591.mosso";
@@ -296,9 +309,68 @@ public class LocationUpdatesService extends Service {
     private void onNewLocation(Location location) {
         Log.i(TAG, "New location: " + location);
 
-        mLocation = location;
-        // add new location to the repo
-        myRepo.addNewLocation(mLocation);
+        final RunningParam runningParam = RunningParam.getInstance();
+        runningParam.setCurrLocation(location);
+        runningParam.setSelfPrevSteps(runningParam.getSelfCurSteps());
+        runningParam.setSelfCurSteps(FitData.getFitStep());
+
+
+        RequestClass requestClass = new RequestClass(CurrentUser.getInstance().getEmail(),
+                                                    location.getLatitude() + "",
+                                                    location.getLongitude() + "",
+                                                    "1",
+                                                    RunningParam.getInstance().getSelfPrevSteps() + "",
+                                                    RunningParam.getInstance().getSelfCurSteps() + "",
+                                                    CurrentUser.getInstance().getTeam());
+        Log.d("testo", requestClass.toString());
+
+        new AsyncTask<RequestClass, Void, ResponseClass>() {
+            @Override
+            protected ResponseClass doInBackground(RequestClass... params) {
+                // invoke "echo" method. In case it fails, it will throw a
+                // LambdaFunctionException.
+                try {
+                    return LambdaClient.getInstance().mossoLocationUpdation(params[0]);
+                } catch (LambdaFunctionException lfe) {
+                    Log.e("testo", "Failed to invoke echo", lfe);
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(ResponseClass result) {
+                Log.d("testo", "result: " + result.toString());
+                Map<String, LatLng> locationsInfo = new HashMap();
+                Map<String, Integer> stepsInfo = new HashMap();
+                if (result.getBasicInfo() != "") {
+                    for (String s : result.getBasicInfo().split(" ")) {
+                        String[] totalInfo = s.split(":");
+                        String email = totalInfo[0];
+                        String[] detailInfo = totalInfo[1].split(",");
+                        locationsInfo.put(email, new LatLng(Double.valueOf(detailInfo[0]), Double.valueOf(detailInfo[1])));
+                        stepsInfo.put(email, Integer.valueOf(detailInfo[2]));
+                    }
+                }
+                Map<String, MarkerInfo> markerInfo = runningParam.getMarkersInfo();
+                for (Map.Entry<String, MarkerInfo> entry : markerInfo.entrySet()) {
+                    if (locationsInfo.containsKey(entry.getKey())) {
+                        entry.getValue().setLatLng(locationsInfo.get(entry.getKey()));
+                        entry.getValue().setSteps(stepsInfo.get(entry.getKey()));
+                        entry.getValue().setState(1);
+                    } else {
+                        entry.getValue().setState(-1);
+                    }
+                }
+                String[] teamInfo = result.getAdditionalInfo().split(" ");
+                runningParam.setRed(Integer.valueOf(teamInfo[0]));
+                runningParam.setBlue(Integer.valueOf(teamInfo[1]));
+                runningParam.setState(1);
+
+                MapViewModel.getRunningParamMutableLiveData().setValue(runningParam);
+            }
+        }.execute(requestClass);
+
+
 
         // Notify anyone listening for broadcasts about the new location.
         // just for test, will be removed in the future

@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    android:layout_height="match_parent">
+
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fabMapOptions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:src="@drawable/ic_action_compose"
         app:backgroundTint="@color/cardview_dark_background"
         app:fabSize="mini"
-        android:src="@drawable/ic_action_compose"
-        android:id="@+id/fabMapOptions"
-        />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="@+id/map"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <fragment
@@ -29,8 +34,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="32dp"
-
-
         android:src="@drawable/ic_directions_run"
         app:backgroundTint="@color/cardview_dark_background"
         app:fabSize="normal"
@@ -40,5 +43,92 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.826" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipRed"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Step: 1234"
+        android:textColor="#000000"
+        android:theme="@style/Theme.MaterialComponents.Light"
+        app:chipBackgroundColor="#EE8FA8"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/chipBlue"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/map"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chipBlue"
+        style="@style/Widget.MaterialComponents.Chip.Choice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Step: 1234"
+        android:textColor="#000000"
+        android:theme="@style/Theme.MaterialComponents.Light"
+        app:chipBackgroundColor="#8599CF"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/chipRed"
+        app:layout_constraintTop_toTopOf="@+id/chipRed" />
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/mapMapConfig"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:background="?android:attr/windowBackground"
+        app:layout_constraintBottom_toBottomOf="@+id/fabMapOptions"
+        app:layout_constraintEnd_toStartOf="@+id/fabMapOptions"
+        app:layout_constraintTop_toTopOf="@+id/fabMapOptions">
+
+        <CheckBox
+            android:id="@+id/cbRoute"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="Route"
+            app:layout_constraintBottom_toTopOf="@+id/cbMarker"
+            app:layout_constraintStart_toStartOf="@+id/cbMarker"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <CheckBox
+            android:id="@+id/cbMarker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
+            android:text="Marker"
+            app:layout_constraintBottom_toTopOf="@+id/cbMyLocation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/cbRoute" />
+
+        <CheckBox
+            android:id="@+id/cbMyLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Mine"
+            app:layout_constraintStart_toStartOf="@+id/cbMarker"
+            app:layout_constraintTop_toBottomOf="@+id/cbMarker" />
+
+        <CheckBox
+            android:id="@+id/cbTeam"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:text="@string/title_team"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="@+id/cbMarker"
+            app:layout_constraintTop_toBottomOf="@+id/cbMyLocation" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,6 +18,7 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -25,14 +26,18 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.Toast;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import bu.cs591.mosso.BuildConfig;
 import bu.cs591.mosso.MainActivity;
 import bu.cs591.mosso.R;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -40,17 +45,24 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -58,73 +70,74 @@ import androidx.fragment.app.Fragment;
 import bu.cs591.mosso.Utils;
 import bu.cs591.mosso.db.MapMarker;
 import bu.cs591.mosso.db.RunningRepo;
+import bu.cs591.mosso.entity.CurrentUser;
+import bu.cs591.mosso.entity.MarkerInfo;
+import bu.cs591.mosso.entity.RunningParam;
+import bu.cs591.mosso.entity.RunningRecord;
+import bu.cs591.mosso.utils.DateHelper;
+import bu.cs591.mosso.utils.ImageHelper;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
-    private FloatingActionButton btnRunStart;
-
-    private Context mContext;
-
-    private MapViewModel mViewModel;
-    private RunningRepo myRepo;
-
-    public interface MapFragmentListener {
-        public void runStart();
-        public void runStop();
-    }
-
-    private MapFragmentListener mListener;
-
-    // Map Related...
-    private static final String TAG = MapFragment.class.getSimpleName();
-    private GoogleMap mMap;
-    private CameraPosition mCameraPosition;
-
-    private LocationManager locationManager;
-
-    // A default location (Sydney, Australia) and default zoom to use when location permission is
-    // not granted.
-    private final LatLng mDefaultLocation = new LatLng(-33.8523341, 151.2106085);
-    private static final int DEFAULT_ZOOM = 15;
-    private static final int RUNNING_ZOOM = 18;
-    private static final int PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 1;
-    private boolean mLocationPermissionGranted;
+    // configuration info
+    private static final String TAG = "testo";
+    private boolean locationPermission;
 
     // The geographical location where the device is currently located. That is, the last-known
     // location retrieved by the Fused Location Provider.
-    private Location mLastKnownLocation;
+    private GoogleMap googleMap;
+    private static final int DEFAULT_ZOOM = 15;
+    private static final int RUNNING_ZOOM = 18;
+    // A default location (Sydney, Australia) and default zoom to use when location permission is
+    // not granted.
+    private final LatLng defaultLocation = new LatLng(-33.8523341, 151.2106085);
+    private LocationManager locationManager;
 
-    // Keys for storing activity state.
-    private static final String KEY_CAMERA_POSITION = "camera_position";
-    private static final String KEY_LOCATION = "location";
+    // UI
+    private Chip chipRed;
+    private Chip chipBlue;
+    private ConstraintLayout configMenu;
+    private CheckBox mineLayer;
+    private CheckBox othersLayer;
+    private CheckBox trackLayer;
+    private CheckBox teamLayer;
+    private FloatingActionButton btnConfig;
+    private FloatingActionButton btnRunStart;
 
-    private List<Marker> markers;
+    // running related
+    Location startLocation;
+    Location endLocation;
+    String startTime;
+    private Location lastKnownLocation;
+    List<Marker> markers;
+    List<LatLng> selfPoints;
+    Polyline selfRoute;
+    double distance;
 
-    private Polyline routes;
-
-    private Observer<List<Location>> locationObserver;
+    // others
+    private Context context;
+    private MapViewModel viewModel;
+    public interface MapFragmentListener {
+        void runStart();
+        void runStop();
+    }
+    private MapFragmentListener mapFragmentListener;
 
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        mContext = context;
-        mListener = (MapFragmentListener) context;
+        this.context = context;
+        mapFragmentListener = (MapFragmentListener) context;
+        // running params
+        locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
+        // data observ
+        startLocation = null;
+        endLocation = startLocation;
         markers = new ArrayList<>();
-        myRepo = RunningRepo.getInstance();
-
-        locationManager = (LocationManager)mContext.getSystemService(Context.LOCATION_SERVICE);
-        locationObserver = new Observer<List<Location>>() {
-            @Override
-            public void onChanged(List<Location> locations) {
-                List<LatLng> points = new LinkedList<>();
-                for (Location loc : locations) {
-                    points.add(new LatLng(loc.getLatitude(), loc.getLongitude()));
-                }
-                routes.setPoints(points);
-            }
-        };
+        selfPoints = new ArrayList<>();
+        Utils.setRequestingLocationUpdates(context, false);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -132,34 +145,56 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         View root = inflater.inflate(R.layout.fragment_map, container, false);
 
         // instantiate the view model
-        mViewModel = ViewModelProviders.of(this).get(MapViewModel.class);
+        viewModel = ViewModelProviders.of(this).get(MapViewModel.class);
 
         // inflate the map fragment and start initialize the map
         SupportMapFragment mapFragment =
                 (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+
         btnRunStart = root.findViewById(R.id.fab_run_mainPage);
         btnRunStart.setOnClickListener(new View.OnClickListener() {
             public void onClick (View view){
-                if (!Utils.requestingLocationUpdates(mContext)) {
+                if (!Utils.requestingLocationUpdates(context)) {
                     Snackbar snackbar = Snackbar.make(view, "Start Running...", Snackbar.LENGTH_LONG);
                     snackbar.setAction(R.string.dismiss_string, this);
                     snackbar.show();
-                    mListener.runStart();
+                    mapFragmentListener.runStart();
+                    Log.d("testo", "from here");
                     startRunning();
                 } else {
                     Snackbar snackbar = Snackbar.make(view, "Stop Running...", Snackbar.LENGTH_LONG);
                     snackbar.setAction(R.string.dismiss_string, this);
                     snackbar.show();
+                    Log.d("testo", "from here");
                     stopRunning();
-                    mListener.runStop();
+                    mapFragmentListener.runStop();
                 }
             }
 
         });
-        FloatingActionButton textView = root.findViewById(R.id.fabMapOptions);
-        registerForContextMenu(textView);
+
+        configMenu = root.findViewById(R.id.mapMapConfig);
+        configMenu.setVisibility(View.INVISIBLE);
+        mineLayer = root.findViewById(R.id.cbMyLocation);
+        mineLayer.setOnClickListener(e -> onMineToggled(e));
+        mineLayer.setChecked(true);
+        othersLayer = root.findViewById(R.id.cbMarker);
+        othersLayer.setOnClickListener(e -> onOthersToggled(e));
+        othersLayer.setChecked(true);
+        trackLayer = root.findViewById(R.id.cbRoute);
+        trackLayer.setOnClickListener(e -> onTrackToggled(e));
+        trackLayer.setChecked(true);
+        teamLayer = root.findViewById(R.id.cbTeam);
+        teamLayer.setOnClickListener(e -> onTeamToggled(e));
+        teamLayer.setChecked(true);
+        btnConfig = root.findViewById(R.id.fabMapOptions);
+        btnConfig.setOnClickListener(e -> onConfig(e));
+        chipBlue = root.findViewById(R.id.chipBlue);
+        chipRed = root.findViewById(R.id.chipRed);
+        chipRed.setText("Step: 0");
+        chipBlue.setText("Step: 0");
 
         return root;
     }
@@ -173,7 +208,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
      */
     @Override
     public void onMapReady(final GoogleMap map) {
-        mMap = map;
+        googleMap = map;
 
         // Prompt the user for permission.
         if (!checkPermissions()) {
@@ -187,53 +222,70 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         getDeviceLocation(DEFAULT_ZOOM);
 
         // bind the observer of view model here
-        mViewModel.getNeighbors().observe(this, new Observer<List<MapMarker>>() {
+        MapViewModel.getRunningParamMutableLiveData().observe(this, new Observer<RunningParam>() {
             @Override
-            public void onChanged(List<MapMarker> mapMarkers) {
-                // clear all the previous markers on the map
+            public void onChanged(RunningParam runningParam) {
+                Log.d("testo", runningParam.toString());
                 clearMarkers();
-                // iterate every new marker and add it to the map
-                for (MapMarker marker : mapMarkers) {
-                    LatLng latLng = new LatLng(marker.getLatLng().latitude, marker.getLatLng().longitude);
-                    MarkerOptions options = new MarkerOptions().position(latLng);
-                    Bitmap bitmap = createUserBitmapRed();
-                    //if team Blue, Bitmap bitmap = createUserBitmapBlue();
-                    if(bitmap!=null){
-                        options.title(marker.getUsername());
-                        options.icon(BitmapDescriptorFactory.fromBitmap(bitmap)).snippet(marker.getTimestamp());
-                        markers.add(mMap.addMarker(options));
-                        mMap.moveCamera(CameraUpdateFactory.newLatLng(latLng));
-                        mMap.animateCamera(CameraUpdateFactory.zoomTo(15), 2000, null);
+                if (runningParam.getState() == -1) return;
+                else {
+                    if (startLocation == null) {
+                        startLocation = runningParam.getCurrLocation();
+                        endLocation = runningParam.getCurrLocation();
                     }
+                    distance += endLocation.distanceTo(runningParam.getCurrLocation());
+                    endLocation = runningParam.getCurrLocation();
+                    selfPoints.add(new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
+                    chipRed.setText("Step: " + runningParam.getRed());
+                    chipBlue.setText("Step: " + runningParam.getBlue());
+                    List<Marker> tempMarkers = new ArrayList<>();
+                    for (MarkerInfo markerInfo : runningParam.getMarkersInfo().values()) {
+                        if (markerInfo.getState() == -1) continue;
+                        MarkerOptions options = new MarkerOptions().position(markerInfo.getLatLng());
+                        Bitmap bitmap = null;
+                        if (markerInfo.getTeam().equals("red")) bitmap = createUserBitmapRed(markerInfo.getBitmap());
+                        else bitmap = createUserBitmapBlue(markerInfo.getBitmap());
+                        if (bitmap != null) {
+                            options.title(CurrentUser.getInstance().getFriends().get(markerInfo.getEmail()).getName());
+                            options.icon(BitmapDescriptorFactory.fromBitmap(bitmap)).snippet(markerInfo.getSteps() + "");
+                        }
+                        markers.add(googleMap.addMarker(options));
+                    }
+                    refreshView();
                 }
 
             }
         });
 
         // if is running right now
-        if (Utils.requestingLocationUpdates(mContext) && mLocationPermissionGranted) {
+        if (Utils.requestingLocationUpdates(context) && locationPermission) {
+            Log.d("testo", "running zhene");
             startRunning();
         }
     }
 
     private void startRunning() {
-        routes = mMap.addPolyline(new PolylineOptions().color(Color.RED));
-        myRepo.getRoutes().observe(this, locationObserver);
+        Log.d("testo","start");
+        startTime = DateHelper.generateTimeStamp();
         getDeviceLocation(RUNNING_ZOOM);
     }
 
     private void stopRunning() {
-        myRepo.getRoutes().removeObserver(locationObserver);
-        routes.remove();
-        getDeviceLocation(DEFAULT_ZOOM);
+        Log.d("testo","stop");
+        onScreenshot();
     }
 
-    private void clearMarkers() {
-        for (Marker marker : markers) {
-            marker.remove();
-        }
+    private void initData() {
+        startLocation = null;
+        endLocation = startLocation;
         markers.clear();
+        selfPoints.clear();
+        chipRed.setText("Step: 0");
+        chipBlue.setText("Step: 0");
+        distance = 0;
+        startTime = DateHelper.generateTimeStamp();
     }
+
 
     /**
      * Gets the current location of the device, and positions the map's camera.
@@ -244,17 +296,17 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
          * cases when a location is not available.
          */
         try {
-            if (mLocationPermissionGranted) {
+            if (locationPermission) {
                 // get last known location
-                mLastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                if (mLastKnownLocation != null) {
+                lastKnownLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                if (lastKnownLocation != null) {
                     // update it to the map
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
-                            new LatLng(mLastKnownLocation.getLatitude(), mLastKnownLocation.getLongitude()), zoom));
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(lastKnownLocation.getLatitude(), lastKnownLocation.getLongitude()), zoom));
                 } else {
                     // if not find the location, load a default one
-                    mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(mDefaultLocation, zoom));
-                    mMap.getUiSettings().setMyLocationButtonEnabled(false);
+                    googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, zoom));
+                    googleMap.getUiSettings().setMyLocationButtonEnabled(false);
                 }
             }
         } catch (SecurityException e)  {
@@ -266,18 +318,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
      * Updates the map's UI settings based on whether the user has granted location permission.
      */
     private void updateLocationUI() {
-        if (mMap == null) {
+        if (googleMap == null) {
             return;
         }
         try {
             // if permission is already granted....
-            if (mLocationPermissionGranted) {
-                mMap.setMyLocationEnabled(true);
-                mMap.getUiSettings().setMyLocationButtonEnabled(true);
+            if (locationPermission) {
+                googleMap.setMyLocationEnabled(true);
+                googleMap.getUiSettings().setMyLocationButtonEnabled(true);
             } else {
-                mMap.setMyLocationEnabled(false);
-                mMap.getUiSettings().setMyLocationButtonEnabled(false);
-                mLastKnownLocation = null;
+                googleMap.setMyLocationEnabled(false);
+                googleMap.getUiSettings().setMyLocationButtonEnabled(false);
+                lastKnownLocation = null;
                 requestPermissions();
             }
         } catch (SecurityException e)  {
@@ -289,9 +341,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
      * Returns the current state of the permissions needed.
      */
     private boolean checkPermissions() {
-        mLocationPermissionGranted = PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(mContext,
+        locationPermission = PackageManager.PERMISSION_GRANTED == ActivityCompat.checkSelfPermission(context,
                 Manifest.permission.ACCESS_FINE_LOCATION);
-        return mLocationPermissionGranted;
+        return locationPermission;
     }
 
     private void requestPermissions() {
@@ -340,15 +392,18 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                 // receive empty arrays.
                 Log.i(TAG, "User interaction was cancelled.");
             } else if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                mLocationPermissionGranted = true;
-                if (Utils.requestingLocationUpdates(mContext))
+                locationPermission = true;
+                if (Utils.requestingLocationUpdates(context)) {
+                    Log.d("testo", "from there");
                     startRunning();
+                }
                 else
                     getDeviceLocation(DEFAULT_ZOOM);
             } else {
                 // Permission denied.
                 //setButtonsState(false);
-                if (Utils.requestingLocationUpdates(mContext))
+                if (Utils.requestingLocationUpdates(context))
+                    Log.d("testo", "from there");
                     stopRunning();
                 Snackbar.make(
                         getActivity().findViewById(R.id.nav_view),
@@ -374,38 +429,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         }
     }
 
-    @Override
-    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-        super.onCreateContextMenu(menu, v, menuInfo);
-        menu.setHeaderTitle("Mosso options");
-        getActivity().getMenuInflater().inflate(R.menu.example_layer_menu, menu);
-    }
-
-    @Override
-    public boolean onContextItemSelected(@NonNull MenuItem item) {
-
-
-        switch (item.getItemId()){
-            case R.id.option_myLocation_1:
-                Toast.makeText(getActivity(), "My location seletcted", Toast.LENGTH_SHORT).show();
-                int  a = item.getItemId();
-
-                return true;
-            case R.id.option_track_2:
-                Toast.makeText(getActivity(),"Track selected ", Toast.LENGTH_SHORT ).show();
-                return true;
-
-            case R.id.option_other_Location_3:
-                Toast.makeText(getActivity(),"Other Location selected", Toast.LENGTH_SHORT).show();
-                return true;
-
-            default:
-                return super.onContextItemSelected(item);
-        }
-
-    }
-
-    private Bitmap createUserBitmapRed() {
+    private Bitmap createUserBitmapRed(Bitmap loadBitmap) {
         Bitmap result = null;
         try {
             result = Bitmap.createBitmap(dp(62), dp(76), Bitmap.Config.ARGB_8888);
@@ -419,7 +443,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             RectF bitmapRect = new RectF();
             canvas.save();
 
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+            Bitmap bitmap = loadBitmap;
             //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
             if (bitmap != null) {
                 BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
@@ -442,7 +466,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         return result;
     }
 
-    private Bitmap createUserBitmapBlue() {
+    private Bitmap createUserBitmapBlue(Bitmap loadBitMap) {
         Bitmap result = null;
         try {
             result = Bitmap.createBitmap(dp(62), dp(76), Bitmap.Config.ARGB_8888);
@@ -456,7 +480,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             RectF bitmapRect = new RectF();
             canvas.save();
 
-            Bitmap bitmap = BitmapFactory.decodeResource(getResources(), R.drawable.avatar);
+            Bitmap bitmap = loadBitMap;
             //Bitmap bitmap = BitmapFactory.decodeFile(path.toString()); /*generate bitmap here if your image comes from any url*/
             if (bitmap != null) {
                 BitmapShader shader = new BitmapShader(bitmap, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP);
@@ -485,4 +509,149 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         }
         return (int) Math.ceil(getResources().getDisplayMetrics().density * value);
     }
+
+    // ui private method
+
+    private void showHideMarkers(boolean isShown) {
+        if (isShown && markers != null) {
+            for (Marker marker : markers) marker.setVisible(true);
+        }
+        else if (!isShown && markers != null)
+            for (Marker marker : markers) marker.setVisible(false);
+    }
+
+    private void clearMarkers() {
+        for (Marker marker : markers) {
+            marker.remove();
+        }
+        markers.clear();
+    }
+
+    // polyline
+    private void showHideRoute(boolean isShown) {
+        if (isShown && selfRoute != null) selfRoute.setVisible(true);
+        else if (!isShown && selfRoute != null) selfRoute.setVisible(false);
+    }
+
+    // team
+    private void showHideTeam(boolean isShown) {
+        if (isShown && chipRed != null && chipBlue != null) { chipRed.setVisibility(View.VISIBLE); chipBlue.setVisibility(View.VISIBLE);}
+        else if (!isShown && chipRed != null && chipBlue != null) { chipRed.setVisibility(View.INVISIBLE); chipBlue.setVisibility(View.INVISIBLE);}
+    }
+
+
+    // option menu
+    public void onConfig(View view) {
+        if (configMenu.getVisibility() == View.INVISIBLE) configMenu.setVisibility(View.VISIBLE);
+        else configMenu.setVisibility(View.INVISIBLE);
+    }
+
+    public void onMineToggled(View view) {
+        googleMap.setMyLocationEnabled(mineLayer.isChecked());
+    }
+
+    public void onOthersToggled(View view) {
+        refreshView();
+    }
+
+    public void onTrackToggled(View view) {
+        refreshView();
+    }
+
+    public void onTeamToggled(View view) {
+        refreshView();
+    }
+
+    private void refreshView() {
+        showHideMarkers(othersLayer.isChecked());
+        showHideRoute(trackLayer.isChecked());
+        showHideTeam(teamLayer.isChecked());
+    }
+
+    public void onScreenshot() {
+        googleMap.setMyLocationEnabled(false);
+        showHideMarkers(false);
+        showHideRoute(true);
+        showHideTeam(false);
+        Marker start = googleMap.addMarker(new MarkerOptions().position(new LatLng(startLocation.getLatitude(), startLocation.getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+        Marker end = googleMap.addMarker(new MarkerOptions().position(new LatLng(endLocation.getLatitude(), endLocation.getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        recenterLocation(checkBounds(selfPoints), new GoogleMap.CancelableCallback() {
+            @Override
+            public void onFinish() {
+                snapShot();
+                recenterLocation(endLocation, DEFAULT_ZOOM, new GoogleMap.CancelableCallback() {
+                    @Override
+                    public void onFinish() {
+                        Log.d("testo", "snapshota");
+                        start.remove();
+                        end.remove();
+                        googleMap.setMyLocationEnabled(true);
+                        refreshView();
+                        initData();
+                        getDeviceLocation(DEFAULT_ZOOM);
+                    }
+
+                    @Override
+                    public void onCancel() {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onCancel() {
+
+            }
+        });
+    }
+
+    private void snapShot() {
+
+        if (googleMap == null) return;
+
+        final GoogleMap.SnapshotReadyCallback callback = new GoogleMap.SnapshotReadyCallback() {
+            @Override
+            public void onSnapshotReady(Bitmap snapshot) {
+                // 2.1 Callback is called from the main thread, so we can modify the ImageView safely.
+                int duration = DateHelper.getDurationDiff(startTime);
+                float unitSpeed = (float)(distance*1.0  / duration == 0 ? 1 : distance*1.0  / duration);
+                String speed = String.format("%.2f", 1000.0 / unitSpeed) + " min/km";
+//                RunningRecord.runningRecords.add(new RunningRecord(startTime, DateHelper.generateDayInWeek(), distance + " m", speed, DateHelper.getDuration(duration), ImageHelper.RotateBitmap(snapshot, 90)));
+                RunningRecord.runningRecords.add(new RunningRecord(startTime, DateHelper.generateDayInWeek(), distance + " m", speed, DateHelper.getDuration(duration), snapshot));
+            }
+        };
+        googleMap.snapshot(callback);
+    }
+
+    // three overloaded functions used to center user's location
+    private void recenterLocation(Location location, int zoom) {
+        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(latLng, zoom);
+        googleMap.animateCamera(update);
+    }
+
+    private void recenterLocation(Location location, int zoom, GoogleMap.CancelableCallback cancelableCallback) {
+        LatLng latLng = new LatLng(location.getLatitude(),location.getLongitude());
+        CameraUpdate update = CameraUpdateFactory.newLatLngZoom(latLng, zoom);
+        googleMap.animateCamera(update, cancelableCallback);
+    }
+
+    private void recenterLocation(LatLngBounds latLngBounds, GoogleMap.CancelableCallback cancelableCallback) {
+        CameraUpdate update = CameraUpdateFactory.newLatLngBounds(latLngBounds, 20);
+        googleMap.animateCamera(update, cancelableCallback);
+    }
+
+    // find the SW and NE point in polyline
+    private LatLngBounds checkBounds(List<LatLng> latLngs) {
+        double vMin = Integer.MAX_VALUE, vMax = Integer.MIN_VALUE, hMin = Integer.MAX_VALUE, hMax = Integer.MIN_VALUE;
+        for (LatLng latLng : latLngs) {
+            vMin = Math.min(latLng.longitude, vMin);
+            vMax = Math.max(latLng.longitude, vMax);
+            hMin = Math.min(latLng.latitude, hMin);
+            hMax = Math.max(latLng.latitude, hMax);
+        }
+        return new LatLngBounds(new LatLng(hMin, vMin), new LatLng(hMax, vMax));
+    }
+
+
 }

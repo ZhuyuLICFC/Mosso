@@ -27,30 +27,30 @@ public class HistoryViewModel extends ViewModel {
     private List<RunningRecord> runningRecords;
 
     public HistoryViewModel() {
-        liveUsers = new MutableLiveData<>();
-        runningRecords = new ArrayList<>();
-
-        FirebaseUser fireUser = FirebaseAuth.getInstance().getCurrentUser();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        // make query once
-        db.collection("historys")
-                .document("zhuyuli@bu.edu")
-                .collection("running")
-                .orderBy("date", Query.Direction.DESCENDING)
-                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<QuerySnapshot> task) {
-                if (task.isSuccessful()) {
-                    for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
-                        runningRecords.add(new RunningRecord(queryDocumentSnapshot.get("date") + "", queryDocumentSnapshot.getString("weekNo"), queryDocumentSnapshot.getString("distance"), queryDocumentSnapshot.getString("speed"), queryDocumentSnapshot.getString("duration")));
-                    }
-                    liveUsers.setValue(runningRecords);
-                } else {
-                    Log.w("ACCOUNT_DEBUG", "Error getting documents.", task.getException());
-                    //addUser();
-                }
-            }
-        });
+//        liveUsers = new MutableLiveData<>();
+////        runningRecords = new ArrayList<>();
+////
+////        FirebaseUser fireUser = FirebaseAuth.getInstance().getCurrentUser();
+////        FirebaseFirestore db = FirebaseFirestore.getInstance();
+////        // make query once
+////        db.collection("historys")
+////                .document("zhuyuli@bu.edu")
+////                .collection("running")
+////                .orderBy("date", Query.Direction.DESCENDING)
+////                .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
+////            @Override
+////            public void onComplete(@NonNull Task<QuerySnapshot> task) {
+////                if (task.isSuccessful()) {
+////                    for (QueryDocumentSnapshot queryDocumentSnapshot : task.getResult()) {
+////                        runningRecords.add(new RunningRecord(queryDocumentSnapshot.get("date") + "", queryDocumentSnapshot.getString("weekNo"), queryDocumentSnapshot.getString("distance"), queryDocumentSnapshot.getString("speed"), queryDocumentSnapshot.getString("duration")));
+////                    }
+////                    liveUsers.setValue(runningRecords);
+////                } else {
+////                    Log.w("ACCOUNT_DEBUG", "Error getting documents.", task.getException());
+////                    //addUser();
+////                }
+////            }
+////        });
     }
 
     public MutableLiveData<List<RunningRecord>> getLiveUsers() {
