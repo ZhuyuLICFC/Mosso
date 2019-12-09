@@ -34,7 +34,7 @@ public class HistoryViewModel extends ViewModel {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         // make query once
         db.collection("historys")
-                .document(fireUser.getEmail())
+                .document("zhuyuli@bu.edu")
                 .collection("running")
                 .orderBy("date", Query.Direction.DESCENDING)
                 .get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {

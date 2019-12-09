@@ -63,6 +63,7 @@ public class AccountViewModel extends ViewModel {
                     }
                 } else {
                     Log.w("ACCOUNT_DEBUG", "Error getting documents.", task.getException());
+                    Log.d("testo","failed");
                     //addUser();
                 }
             }

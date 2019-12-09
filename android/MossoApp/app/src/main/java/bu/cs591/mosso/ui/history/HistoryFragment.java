@@ -1,6 +1,7 @@
 package bu.cs591.mosso.ui.history;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,7 @@ import bu.cs591.mosso.R;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProviders;
+import bu.cs591.mosso.entity.CurrentUser;
 import bu.cs591.mosso.entity.RunningRecord;
 import bu.cs591.mosso.utils.DateHelper;
 
@@ -24,6 +26,7 @@ public class HistoryFragment extends Fragment {
 
     private HistoryViewModel historyViewModel;
     private RecyclerView recyclerView;
+    private static final String TAG = "testo";
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -31,6 +34,7 @@ public class HistoryFragment extends Fragment {
                 ViewModelProviders.of(this).get(HistoryViewModel.class);
 
 
+        Log.d(TAG, CurrentUser.getInstance().toString());
 
         View root = inflater.inflate(R.layout.fragment_history, container, false);
 

@@ -55,6 +55,7 @@ public class MapViewModel extends ViewModel {
                             dc.getDouble("longitude"));
                     markerList.add(newMarker);
                 }
+
                 // notify the observer that data is updated
                 neighbors.setValue(markerList);
             }

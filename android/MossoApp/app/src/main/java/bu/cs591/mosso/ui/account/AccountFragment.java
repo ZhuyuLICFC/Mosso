@@ -38,6 +38,7 @@ import androidx.lifecycle.ViewModelProviders;
 import bu.cs591.mosso.LogInActivity;
 import bu.cs591.mosso.R;
 import bu.cs591.mosso.db.User;
+import bu.cs591.mosso.entity.CurrentUser;
 
 import static com.firebase.ui.auth.AuthUI.TAG;
 
@@ -83,6 +84,7 @@ public class AccountFragment extends Fragment {
                         .addOnCompleteListener(new OnCompleteListener<Void>() {
                             public void onComplete(@NonNull Task<Void> task) {
                                 Intent intent = new Intent(getActivity(), LogInActivity.class);
+                                CurrentUser.setInstance();
                                 startActivity(intent);
                             }
                         });

@@ -6,6 +6,7 @@
     <string name="title_statistic">Stats</string>
     <string name="title_account">Account</string>
     <string name="undo_string">Undo</string>
+    <string name="dismiss_string">Dismiss</string>
     <string name="launch_activity">Open Mosso</string>
     <string name="stop_running">Stop Running</string>
     <string name="location_updated">Location Updated: %1$s</string>

@@ -1,12 +1,8 @@
 package bu.cs591.mosso.ui.map;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,8 +18,6 @@ import android.location.Location;
 import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.IBinder;
-import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -36,7 +30,6 @@ import android.widget.Toast;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import bu.cs591.mosso.BuildConfig;
-import bu.cs591.mosso.LocationUpdatesService;
 import bu.cs591.mosso.MainActivity;
 import bu.cs591.mosso.R;
 
@@ -55,23 +48,16 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import bu.cs591.mosso.Utils;
 import bu.cs591.mosso.db.MapMarker;
 import bu.cs591.mosso.db.RunningRepo;
-import bu.cs591.mosso.db.User;
-import bu.cs591.mosso.ui.account.AccountViewModel;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback{
 
@@ -158,13 +144,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             public void onClick (View view){
                 if (!Utils.requestingLocationUpdates(mContext)) {
                     Snackbar snackbar = Snackbar.make(view, "Start Running...", Snackbar.LENGTH_LONG);
-                    snackbar.setAction(R.string.undo_string, this);
+                    snackbar.setAction(R.string.dismiss_string, this);
                     snackbar.show();
                     mListener.runStart();
                     startRunning();
                 } else {
                     Snackbar snackbar = Snackbar.make(view, "Stop Running...", Snackbar.LENGTH_LONG);
-                    snackbar.setAction(R.string.undo_string, this);
+                    snackbar.setAction(R.string.dismiss_string, this);
                     snackbar.show();
                     stopRunning();
                     mListener.runStop();
@@ -172,7 +158,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             }
 
         });
-        FloatingActionButton textView = root.findViewById(R.id.fab_snapBar_mainPage);
+        FloatingActionButton textView = root.findViewById(R.id.fabMapOptions);
         registerForContextMenu(textView);
 
         return root;

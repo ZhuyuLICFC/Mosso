@@ -12,7 +12,7 @@
         app:backgroundTint="@color/cardview_dark_background"
         app:fabSize="mini"
         android:src="@drawable/ic_action_compose"
-        android:id="@+id/fab_snapBar_mainPage"
+        android:id="@+id/fabMapOptions"
         />
 
 

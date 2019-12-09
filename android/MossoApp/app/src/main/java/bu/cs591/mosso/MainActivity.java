@@ -29,14 +29,26 @@ import bu.cs591.mosso.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.fitness.FitnessOptions;
 import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
+import bu.cs591.mosso.entity.CurrentUser;
 import bu.cs591.mosso.ui.map.MapFragment;
 
 public class MainActivity extends AppCompatActivity implements MapFragment.MapFragmentListener {
@@ -115,10 +127,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
                     GoogleSignIn.getLastSignedInAccount(this),
                     fitnessOptions);
         }
-
-
-
-
 
     }
 
@@ -273,5 +281,6 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
             }
         }
     }
+
 
 }
