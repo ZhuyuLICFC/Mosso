@@ -8,11 +8,9 @@
     -->
     <!-- Required for foreground services on P+. -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-
-    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION"/>
-    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION"/>
+    <uses-permission android:name="com.google.android.gms.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
 
     <application
         android:allowBackup="true"
@@ -21,7 +19,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="bu.cs591.mosso.LogInActivity">
+        <activity android:name=".ChatActivity"></activity>
+        <activity android:name=".LogInActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -37,13 +36,10 @@
             android:value="AIzaSyDDOglYF0pp-3G9xrhgYrKSWk2Gcdo1uxk" />
 
         <activity
-            android:name="bu.cs591.mosso.MainActivity"
-            android:label="@string/app_name">
-        </activity>
-
-        <!-- Foreground services in Q+ require type. -->
+            android:name=".MainActivity"
+            android:label="@string/app_name"></activity> <!-- Foreground services in Q+ require type. -->
         <service
-            android:name="bu.cs591.mosso.LocationUpdatesService"
+            android:name=".LocationUpdatesService"
             android:enabled="true"
             android:exported="true"
             android:foregroundServiceType="location" />

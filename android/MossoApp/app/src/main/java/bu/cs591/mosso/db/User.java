@@ -10,13 +10,15 @@ public class User {
     public String name;
     public String email;
     public Uri photoUrl;
-    public List<User> friends;
 
     public User(String n, String mail, Uri photo) {
         name = n;
         email = mail;
         photoUrl = photo;
         userID = "";
-        friends = new ArrayList<>();
+    }
+
+    public void setUserID(String userID) {
+        this.userID = userID;
     }
 }

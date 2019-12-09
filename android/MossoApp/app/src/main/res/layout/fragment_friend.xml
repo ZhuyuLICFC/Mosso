@@ -5,110 +5,14 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <ListView
+        android:id="@+id/friendsListView"
+        android:layout_width="328dp"
+        android:layout_height="644dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:title="@string/contacts_label"
-        app:titleTextColor="@color/Blue"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <LinearLayout
-        android:layout_marginTop="25dp"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="50dp">
-        <ImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_face_black_24dp"
-            tools:layout_editor_absoluteX="3dp"
-            tools:layout_editor_absoluteY="80dp" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="20dp"
-            android:text="Qinmei Du                 8591steps"
-            android:textColor="#fff"
-            android:textSize="21sp"
-            android:textStyle="bold"
-            tools:layout_editor_absoluteX="73dp"
-            tools:layout_editor_absoluteY="88dp" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_marginTop="25dp"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="100dp">
-        <ImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_face_black_24dp"
-            tools:layout_editor_absoluteX="3dp"
-            tools:layout_editor_absoluteY="80dp" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="20dp"
-            android:text="Lian Duan                  8325steps"
-            android:textColor="#fff"
-            android:textSize="21sp"
-            android:textStyle="bold"
-            tools:layout_editor_absoluteX="73dp"
-            tools:layout_editor_absoluteY="88dp" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_marginTop="25dp"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="150dp">
-        <ImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_face_black_24dp"
-            tools:layout_editor_absoluteX="3dp"
-            tools:layout_editor_absoluteY="80dp" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="20dp"
-            android:text="Zhuyu Li                    6524steps"
-            android:textColor="#fff"
-            android:textSize="21sp"
-            android:textStyle="bold"
-            tools:layout_editor_absoluteX="73dp"
-            tools:layout_editor_absoluteY="88dp" />
-    </LinearLayout>
-    <LinearLayout
-        android:layout_marginTop="25dp"
-        android:orientation="horizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingTop="200dp">
-        <ImageView
-            android:layout_width="36dp"
-            android:layout_height="36dp"
-            android:src="@drawable/ic_face_black_24dp"
-            tools:layout_editor_absoluteX="3dp"
-            tools:layout_editor_absoluteY="80dp" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:paddingLeft="20dp"
-            android:text="Yong Zhou                 5391steps"
-            android:textColor="#fff"
-            android:textSize="21sp"
-            android:textStyle="bold"
-            tools:layout_editor_absoluteX="73dp"
-            tools:layout_editor_absoluteY="88dp" />
-    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
