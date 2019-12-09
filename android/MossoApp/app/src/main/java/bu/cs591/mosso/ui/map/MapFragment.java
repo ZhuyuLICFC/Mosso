@@ -586,8 +586,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                         start.remove();
                         end.remove();
                         googleMap.setMyLocationEnabled(true);
-                        refreshView();
                         initData();
+                        refreshView();
                         getDeviceLocation(DEFAULT_ZOOM);
                     }
 
