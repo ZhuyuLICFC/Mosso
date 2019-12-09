@@ -137,6 +137,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         endLocation = startLocation;
         markers = new ArrayList<>();
         selfPoints = new ArrayList<>();
+
         Utils.setRequestingLocationUpdates(context, false);
     }
 
@@ -236,6 +237,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                     distance += endLocation.distanceTo(runningParam.getCurrLocation());
                     endLocation = runningParam.getCurrLocation();
                     selfPoints.add(new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
+                    selfRoute.setPoints(selfPoints);
                     chipRed.setText("Step: " + runningParam.getRed());
                     chipBlue.setText("Step: " + runningParam.getBlue());
                     List<Marker> tempMarkers = new ArrayList<>();
@@ -256,6 +258,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
 
             }
         });
+
+        if (CurrentUser.getInstance().getTeam() == "red") {
+            selfRoute = googleMap.addPolyline(new PolylineOptions().width(5).color(Color.RED));
+        } else {
+            selfRoute = googleMap.addPolyline(new PolylineOptions().width(5).color(Color.BLUE));
+        }
 
         // if is running right now
         if (Utils.requestingLocationUpdates(context) && locationPermission) {
@@ -280,6 +288,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         endLocation = startLocation;
         markers.clear();
         selfPoints.clear();
+        selfRoute.setPoints(selfPoints);
         chipRed.setText("Step: 0");
         chipBlue.setText("Step: 0");
         distance = 0;
