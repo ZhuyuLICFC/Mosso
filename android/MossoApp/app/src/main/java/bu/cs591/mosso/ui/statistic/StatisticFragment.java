@@ -381,8 +381,7 @@ public class StatisticFragment extends Fragment {
     }
 
     private void setTotalSteps(){
-        Toast.makeText(getActivity(),"Successfully get fit data", Toast.LENGTH_LONG ).show();
-        totalSteps.setText(FitData.getStep() + " steps today");
+        //totalSteps.setText(FitData.getStep() + " steps today");
         final FitChart fitChart = (FitChart)getActivity().findViewById(R.id.fitChart);
         fitChart.setMinValue(0f);
         fitChart.setMaxValue(10000f);

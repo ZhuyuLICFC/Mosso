@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
         // singleton initialization
         LambdaClient.generateInstance(getApplicationContext());
         Map<String, MarkerInfo> markersInfo = new HashMap<>();
-        Log.d("testo", CurrentUser.getInstance().toString());
+
         for (Map.Entry<String, BasicUser> entry : CurrentUser.getInstance().getFriends().entrySet()) {
             markersInfo.put(entry.getKey(), new MarkerInfo(entry.getKey(), null, FitData.getFitStep(), entry.getValue().getTeam(), -1, entry.getValue().getBitmap()));
         }
@@ -290,8 +290,8 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
         public void onReceive(Context context, Intent intent) {
             Location location = intent.getParcelableExtra(LocationUpdatesService.EXTRA_LOCATION);
             if (location != null) {
-                Toast.makeText(MainActivity.this, Utils.getLocationText(location),
-                        Toast.LENGTH_SHORT).show();
+//                Toast.makeText(MainActivity.this, Utils.getLocationText(location),
+//                        Toast.LENGTH_SHORT).show();
             }
         }
     }

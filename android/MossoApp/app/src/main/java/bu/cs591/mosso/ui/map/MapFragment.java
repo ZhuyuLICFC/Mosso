@@ -37,6 +37,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import bu.cs591.mosso.BuildConfig;
+import bu.cs591.mosso.ChatActivity;
 import bu.cs591.mosso.MainActivity;
 import bu.cs591.mosso.R;
 
@@ -73,6 +74,7 @@ import androidx.fragment.app.Fragment;
 import bu.cs591.mosso.Utils;
 import bu.cs591.mosso.db.MapMarker;
 import bu.cs591.mosso.db.RunningRepo;
+import bu.cs591.mosso.entity.BasicUser;
 import bu.cs591.mosso.entity.CurrentUser;
 import bu.cs591.mosso.entity.MarkerInfo;
 import bu.cs591.mosso.entity.RunningParam;
@@ -80,7 +82,13 @@ import bu.cs591.mosso.entity.RunningRecord;
 import bu.cs591.mosso.utils.DateHelper;
 import bu.cs591.mosso.utils.ImageHelper;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback{
+public class MapFragment extends Fragment
+        implements
+        OnMapReadyCallback,
+        GoogleMap.OnMyLocationButtonClickListener,
+        GoogleMap.OnInfoWindowClickListener,
+        GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnMapClickListener {
 
     // configuration info
     private static final String TAG = "testo";
@@ -210,6 +218,10 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     public void onMapReady(final GoogleMap map) {
         googleMap = map;
 
+        googleMap.setOnInfoWindowClickListener(this);
+        googleMap.setOnMarkerClickListener(this);
+        googleMap.setOnMapClickListener(this);
+
         // Prompt the user for permission.
         if (!checkPermissions()) {
             requestPermissions();
@@ -248,6 +260,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                     chipBlue.setText("Step: " + runningParam.getBlue());
                     List<Marker> tempMarkers = new ArrayList<>();
                     for (MarkerInfo markerInfo : runningParam.getMarkersInfo().values()) {
+                        Log.d("testo", markerInfo.getEmail() + markerInfo.getState());
                         if (markerInfo.getState() == -1) continue;
                         MarkerOptions options = new MarkerOptions().position(markerInfo.getLatLng());
                         Bitmap bitmap = null;
@@ -257,7 +270,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                             options.title(CurrentUser.getInstance().getFriends().get(markerInfo.getEmail()).getName());
                             options.icon(BitmapDescriptorFactory.fromBitmap(bitmap)).snippet(markerInfo.getSteps() + "");
                         }
-                        markers.add(googleMap.addMarker(options));
+                        Marker temp = googleMap.addMarker(options);
+                        markers.add(temp);
+                        if (markerInfo.getState() == 0) temp.showInfoWindow();
                     }
                     googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
                         @Override
@@ -274,7 +289,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                             ImageButton chat = (ImageButton)v.findViewById(R.id.chat);
 
                             name.setText(marker.getTitle());
-                            //name.setTextColor();
+                            for (BasicUser basicUser : CurrentUser.getInstance().getFriends().values()) {
+                                if (marker.getTitle().equals(basicUser.getName())) {
+                                    if (basicUser.getTeam().equals("red")) name.setTextColor(Color.RED);
+                                    else name.setTextColor(Color.BLUE);
+                                }
+                            }
                             step.setText(marker.getSnippet());
 
                             return v;
@@ -557,6 +577,12 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         markers.clear();
     }
 
+    @Override
+    public boolean onMyLocationButtonClick() {
+        recenterLocation(lastKnownLocation, DEFAULT_ZOOM);
+        return true;
+    }
+
     // polyline
     private void showHideRoute(boolean isShown) {
         if (isShown && selfRoute != null) selfRoute.setVisible(true);
@@ -613,8 +639,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                     @Override
                     public void onFinish() {
                         Log.d("testo", "snapshota");
-                        start.remove();
-                        end.remove();
+                        googleMap.clear();
                         googleMap.setMyLocationEnabled(true);
                         initData();
                         refreshView();
@@ -683,5 +708,33 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         return new LatLngBounds(new LatLng(hMin, vMin), new LatLng(hMax, vMax));
     }
 
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        for (BasicUser basicUser : CurrentUser.getInstance().getFriends().values()) {
+            if (marker.getTitle().equals(basicUser.getName())) {
+                Intent intent = new Intent(context, ChatActivity.class);
+                intent.putExtra(ChatActivity.FRIEND_ID, basicUser.getId());
+                context.startActivity(intent);
+            }
+        }
+    }
 
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        Log.d("testo", "marker listener");
+        for (BasicUser basicUser : CurrentUser.getInstance().getFriends().values()) {
+            if (marker.getTitle().equals(basicUser.getName())) {
+                RunningParam.getInstance().getMarkersInfo().get(basicUser.getEmail()).setState(0);
+                Log.d("testo", RunningParam.getInstance().getMarkersInfo().get(basicUser.getEmail()).getState() + "state");
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        for (MarkerInfo markerInfo : RunningParam.getInstance().getMarkersInfo().values()) {
+            if (markerInfo.getState() == 0) markerInfo.setState(1);
+        }
+    }
 }

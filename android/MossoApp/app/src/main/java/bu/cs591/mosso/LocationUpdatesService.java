@@ -85,7 +85,7 @@ public class LocationUpdatesService extends Service {
     /**
      * The desired interval for location updates. Inexact. Updates may be more or less frequent.
      */
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
+    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 5000;
 
     /**
      * The fastest rate for active location updates. Updates will never be more frequent
@@ -362,6 +362,7 @@ public class LocationUpdatesService extends Service {
             @Override
             protected void onPostExecute(ResponseClass result) {
                 Log.d("testo", "result: " + result.toString());
+                Log.d("testo", "result: " + result.toString());
                 Map<String, LatLng> locationsInfo = new HashMap();
                 Map<String, Integer> stepsInfo = new HashMap();
                 if (result.getBasicInfo() != "") {
@@ -378,7 +379,7 @@ public class LocationUpdatesService extends Service {
                     if (locationsInfo.containsKey(entry.getKey())) {
                         entry.getValue().setLatLng(locationsInfo.get(entry.getKey()));
                         entry.getValue().setSteps(stepsInfo.get(entry.getKey()));
-                        entry.getValue().setState(1);
+                        if (entry.getValue().getState() == -1) entry.getValue().setState(1);
                     } else {
                         entry.getValue().setState(-1);
                     }
