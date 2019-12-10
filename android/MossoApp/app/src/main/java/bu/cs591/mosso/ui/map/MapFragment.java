@@ -113,7 +113,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     String startTime;
     private Location lastKnownLocation;
     List<Marker> markers;
-    List<LatLng> selfPoints;
     Polyline selfRoute;
     double distance;
 
@@ -139,9 +138,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         startLocation = null;
         endLocation = startLocation;
         markers = new ArrayList<>();
-        selfPoints = new ArrayList<>();
-
-        Utils.setRequestingLocationUpdates(context, false);
     }
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -225,6 +221,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         // Get the current location of the device and set the position of the map.
         getDeviceLocation(DEFAULT_ZOOM);
 
+        if (CurrentUser.getInstance().getTeam() == "red") {
+            selfRoute = googleMap.addPolyline(new PolylineOptions().width(5).color(Color.RED));
+        } else {
+            selfRoute = googleMap.addPolyline(new PolylineOptions().width(5).color(Color.BLUE));
+        }
+
+
         // bind the observer of view model here
         MapViewModel.getRunningParamMutableLiveData().observe(this, new Observer<RunningParam>() {
             @Override
@@ -239,8 +242,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                     }
                     distance += endLocation.distanceTo(runningParam.getCurrLocation());
                     endLocation = runningParam.getCurrLocation();
-                    selfPoints.add(new LatLng(endLocation.getLatitude(), endLocation.getLongitude()));
-                    selfRoute.setPoints(selfPoints);
+                    selfRoute.setPoints(runningParam.getSelfPoints());
                     chipRed.setText("Step: " + runningParam.getRed());
                     chipBlue.setText("Step: " + runningParam.getBlue());
                     List<Marker> tempMarkers = new ArrayList<>();
@@ -283,12 +285,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
             }
         });
 
-        if (CurrentUser.getInstance().getTeam() == "red") {
-            selfRoute = googleMap.addPolyline(new PolylineOptions().width(5).color(Color.RED));
-        } else {
-            selfRoute = googleMap.addPolyline(new PolylineOptions().width(5).color(Color.BLUE));
-        }
-
         // if is running right now
         if (Utils.requestingLocationUpdates(context) && locationPermission) {
             Log.d("testo", "running zhene");
@@ -299,6 +295,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private void startRunning() {
         Log.d("testo","start");
         startTime = DateHelper.generateTimeStamp();
+        RunningParam.getInstance().getSelfPoints().clear();
         getDeviceLocation(RUNNING_ZOOM);
     }
 
@@ -311,8 +308,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         startLocation = null;
         endLocation = startLocation;
         markers.clear();
-        selfPoints.clear();
-        selfRoute.setPoints(selfPoints);
+        RunningParam.getInstance().getSelfPoints().clear();
+        selfRoute.setPoints(RunningParam.getInstance().getSelfPoints());
         chipRed.setText("Step: 0");
         chipBlue.setText("Step: 0");
         distance = 0;
@@ -608,7 +605,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         showHideTeam(false);
         Marker start = googleMap.addMarker(new MarkerOptions().position(new LatLng(startLocation.getLatitude(), startLocation.getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
         Marker end = googleMap.addMarker(new MarkerOptions().position(new LatLng(endLocation.getLatitude(), endLocation.getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-        recenterLocation(checkBounds(selfPoints), new GoogleMap.CancelableCallback() {
+        recenterLocation(checkBounds(RunningParam.getInstance().getSelfPoints()), new GoogleMap.CancelableCallback() {
             @Override
             public void onFinish() {
                 snapShot();
@@ -670,7 +667,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     }
 
     private void recenterLocation(LatLngBounds latLngBounds, GoogleMap.CancelableCallback cancelableCallback) {
-        CameraUpdate update = CameraUpdateFactory.newLatLngBounds(latLngBounds, 20);
+        CameraUpdate update = CameraUpdateFactory.newLatLngBounds(latLngBounds, 50);
         googleMap.animateCamera(update, cancelableCallback);
     }
 

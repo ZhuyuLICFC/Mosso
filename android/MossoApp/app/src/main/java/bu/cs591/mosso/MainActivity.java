@@ -94,6 +94,7 @@ public class MainActivity extends AppCompatActivity implements MapFragment.MapFr
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utils.setRequestingLocationUpdates(getApplicationContext(), false);
         super.onCreate(savedInstanceState);
         myReceiver = new MyReceiver();
         setContentView(R.layout.activity_main);

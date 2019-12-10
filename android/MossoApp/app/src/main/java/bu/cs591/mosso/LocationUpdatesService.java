@@ -313,6 +313,7 @@ public class LocationUpdatesService extends Service {
         runningParam.setCurrLocation(location);
         runningParam.setSelfPrevSteps(runningParam.getSelfCurSteps());
         runningParam.setSelfCurSteps(FitData.getStep());
+        runningParam.getSelfPoints().add(new LatLng(location.getLatitude(), location.getLongitude()));
 
 
         RequestClass requestClass = new RequestClass(CurrentUser.getInstance().getEmail(),

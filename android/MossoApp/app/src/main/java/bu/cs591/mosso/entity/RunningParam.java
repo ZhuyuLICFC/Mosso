@@ -4,6 +4,7 @@ import android.location.Location;
 
 import com.google.android.gms.maps.model.LatLng;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +23,7 @@ public class RunningParam {
     private int state;
     private int red;
     private int blue;
+    private List<LatLng> selfPoints;
 
     private RunningParam(Location currLocation, Map<String, MarkerInfo> markersInfo) {
         this.currLocation = currLocation;
@@ -31,6 +33,7 @@ public class RunningParam {
         red = 0;
         blue = 0;
         this.state = -1;
+        selfPoints = new ArrayList<>();
     }
 
     public static RunningParam getInstance() {
@@ -105,6 +108,10 @@ public class RunningParam {
 
     public void setBlue(int blue) {
         this.blue = blue;
+    }
+
+    public List<LatLng> getSelfPoints() {
+        return selfPoints;
     }
 
     @Override
