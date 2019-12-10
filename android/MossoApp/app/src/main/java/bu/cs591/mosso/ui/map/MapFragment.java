@@ -226,6 +226,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
         } else {
             selfRoute = googleMap.addPolyline(new PolylineOptions().width(5).color(Color.BLUE));
         }
+        selfRoute.setPoints(RunningParam.getInstance().getSelfPoints());
 
 
         // bind the observer of view model here
@@ -295,7 +296,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
     private void startRunning() {
         Log.d("testo","start");
         startTime = DateHelper.generateTimeStamp();
-        RunningParam.getInstance().getSelfPoints().clear();
         getDeviceLocation(RUNNING_ZOOM);
     }
 
