@@ -27,7 +27,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
@@ -253,6 +256,27 @@ public class MapFragment extends Fragment implements OnMapReadyCallback{
                         }
                         markers.add(googleMap.addMarker(options));
                     }
+                    googleMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
+                        @Override
+                        public View getInfoWindow(Marker marker) {
+                            return null;
+                        }
+
+                        @Override
+                        public View getInfoContents(Marker marker) {
+                            View v = getLayoutInflater().inflate(R.layout.marker_info, null);
+
+                            TextView name = (TextView)v.findViewById(R.id.name);
+                            TextView step = (TextView)v.findViewById(R.id.steps);
+                            ImageButton chat = (ImageButton)v.findViewById(R.id.chat);
+
+                            name.setText(marker.getTitle());
+                            //name.setTextColor();
+                            step.setText(marker.getSnippet());
+
+                            return v;
+                        }
+                    });
                     refreshView();
                 }
 
