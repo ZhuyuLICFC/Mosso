@@ -13,6 +13,6 @@
     <string name="permission_rationale">Location permission is needed for core functionality</string>
     <string name="permission_denied_explanation">Permission was denied, but is needed for core
         functionality.</string>
-    <string name="settings">Settings</string>
+    <string name="settings">Location invisible to others</string>
     <string name="contacts_label">Contacts</string>
 </resources>

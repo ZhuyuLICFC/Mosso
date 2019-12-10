@@ -9,33 +9,25 @@
 
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp">
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/buttonaddstyle"
-            android:text="Add"
-            android:textColor="#fff" />
+        android:layout_height="200dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="300dp"
+            android:layout_height="200dp"
             android:background="@drawable/gradientbackground"
             android:orientation="vertical">
 
             <ImageView
                 android:id="@+id/photo"
-                android:layout_width="150dp"
-                android:layout_height="150dp"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="45dp" />
+                android:layout_marginTop="20dp" />
 
             <TextView
                 android:id="@+id/text_account"
                 android:layout_width="wrap_content"
-                android:layout_height="40dp"
+                android:layout_height="30dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
                 android:textColor="#fff"
@@ -46,11 +38,11 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingLeft="80dp">
+                android:paddingLeft="100dp">
 
                 <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
                     android:src="@drawable/ic_email_black_24dp" />
 
                 <TextView
@@ -60,7 +52,7 @@
                     android:layout_gravity="center_vertical"
                     android:paddingLeft="20dp"
                     android:textColor="#fff"
-                    android:textSize="21sp"
+                    android:textSize="15sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -72,13 +64,6 @@
             android:layout_alignParentRight="true"
             android:layout_marginTop="35dp"
             android:src="@drawable/ic_emoji_events_24px" />
-
-        <ImageView
-            android:layout_width="50dp"
-            android:layout_height="36dp"
-            android:layout_marginTop="90dp"
-            android:layout_alignParentRight="true"
-            android:src="@drawable/ic_team_24px" />
 
     </RelativeLayout>
 
@@ -94,13 +79,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_marginLeft="10dp"
                 android:src="@drawable/ic_face_black_24dp"/>
             <TextView
                 android:textStyle="bold"
                 android:textColor="@color/endblue"
-                android:textSize="21sp"
+                android:textSize="18sp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -108,18 +94,19 @@
                 android:text="Mosso makes my life easier"/>
         </LinearLayout>
         <LinearLayout
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="20dp"
             android:orientation="horizontal"
+            android:layout_marginLeft="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
             <ImageView
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:src="@drawable/ic_settings_black_24dp"/>
             <TextView
                 android:textStyle="bold"
                 android:textColor="#000"
-                android:textSize="21sp"
+                android:textSize="18sp"
                 android:layout_gravity="center_vertical"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -127,19 +114,20 @@
                 android:text="Preference"/>
         </LinearLayout>
         <LinearLayout
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="15dp"
             android:orientation="horizontal"
+            android:layout_marginLeft="30dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
 
             <Switch
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textStyle="bold"
-                android:textColor="#000"
-                android:textSize="19sp"
                 android:layout_gravity="center_vertical"
-                android:text="Do not want others to see your records" />
+                android:text="@string/settings"
+                android:textColor="#000"
+                android:textSize="15sp"
+                android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>
 
