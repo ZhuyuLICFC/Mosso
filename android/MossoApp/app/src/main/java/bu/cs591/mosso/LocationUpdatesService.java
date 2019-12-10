@@ -1,5 +1,6 @@
 package bu.cs591.mosso;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -20,6 +21,15 @@ import android.os.Looper;
 import android.util.Log;
 
 import com.amazonaws.mobileconnectors.lambdainvoker.LambdaFunctionException;
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.fitness.Fitness;
+import com.google.android.gms.fitness.data.Bucket;
+import com.google.android.gms.fitness.data.DataPoint;
+import com.google.android.gms.fitness.data.DataSet;
+import com.google.android.gms.fitness.data.DataType;
+import com.google.android.gms.fitness.data.Field;
+import com.google.android.gms.fitness.request.DataReadRequest;
+import com.google.android.gms.fitness.result.DataReadResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
@@ -27,10 +37,18 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -43,6 +61,8 @@ import bu.cs591.mosso.lambda.LambdaClient;
 import bu.cs591.mosso.lambda.RequestClass;
 import bu.cs591.mosso.lambda.ResponseClass;
 import bu.cs591.mosso.ui.map.MapViewModel;
+
+import static java.text.DateFormat.getTimeInstance;
 
 public class LocationUpdatesService extends Service {
     private static final String PACKAGE_NAME = "bu.cs591.mosso";
@@ -422,5 +442,107 @@ public class LocationUpdatesService extends Service {
             }
         }
         return false;
+    }
+
+
+
+    public void accessGoogleFit() {
+
+
+        final String TAG_F = "ServiceFit";
+        //sensorStep = FitData.getSensorStep();
+        //sensorCalory = FitData.getSensorCalory();
+
+        System.out.println("access");
+        //txtFit.setText("access");
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        long endTime = cal.getTimeInMillis();
+        cal.add(Calendar.DAY_OF_MONTH, -1);
+        //cal.add(Calendar.YEAR, -1);
+        long startTime = cal.getTimeInMillis();
+
+        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+
+        DateFormat dateFormat = getTimeInstance(DateFormat.LONG);
+
+
+        DataReadRequest readRequest = new DataReadRequest.Builder()
+                .aggregate(DataType.TYPE_STEP_COUNT_DELTA, DataType.AGGREGATE_STEP_COUNT_DELTA)
+                //.aggregate(DataType.TYPE_CALORIES_EXPENDED, DataType.AGGREGATE_CALORIES_EXPENDED)
+                .setTimeRange(startTime, endTime, TimeUnit.MILLISECONDS)
+                .bucketByTime(1, TimeUnit.DAYS)
+                .build();
+
+
+
+        //Fitness.getHistoryClient(this, GoogleSignIn.getLastSignedInAccount(this))
+        Fitness.getHistoryClient(getApplicationContext(), GoogleSignIn.getLastSignedInAccount(getApplicationContext()))
+                .readData(readRequest)
+                .addOnSuccessListener(new OnSuccessListener<DataReadResponse>() {
+                    @Override
+                    public void onSuccess(DataReadResponse dataReadResponse) {
+
+                        String TAG_F = "UtilFit";
+                        int totalStep = 0;//read from fit api every time
+                        int caloryToday = 0;
+
+                        Log.d(TAG_F, "fit onSuccess in service()");
+//                        //txtFit.setText("Sucessfully got fit data\n");
+//                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.toString());
+//                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.getStatus());
+//                        Log.d(TAG_F, "onSuccess: 2calotry " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA));
+//                        Log.d(TAG_F, "onSuccess: 2step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints());
+//                        //Log.d("TAG_F", "onSuccess: step " + dataReadResponse.getDataSet(DataType.TYPE_STEP_COUNT_DELTA).getDataPoints().get(0).getValue(Field.FIELD_STEPS).asInt());
+//                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.getBuckets().get(0));
+//                        Log.d(TAG_F, "onSuccess: 2 " + dataReadResponse.getBuckets().get(0).getDataSets().size());
+
+
+                        SimpleDateFormat formatter = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss.SSS");
+
+                        for (Bucket bucket : dataReadResponse.getBuckets()) {
+                            List<DataSet> dataSets = bucket.getDataSets();
+                            for (DataSet dataSet : dataSets) {
+                                DateFormat dateFormat = getTimeInstance(DateFormat.LONG);
+
+                                for (DataPoint dp : dataSet.getDataPoints()) {
+                                    Log.d(TAG_F, "Data point:");
+                                    Log.d(TAG_F, "\tType: " + dp.getDataType().getName());
+                                    Log.d(TAG_F, "\tStart: " + dateFormat.format(dp.getStartTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+                                    Log.d(TAG_F, "\tEnd: " + dateFormat.format(dp.getEndTime(TimeUnit.MILLISECONDS)) + " " + formatter.format(dp.getStartTime(TimeUnit.MILLISECONDS)));
+                                    for (Field field : dp.getDataType().getFields()) {
+                                        Log.i(TAG_F, "\tField: " + field.getName() + " Value: " + dp.getValue(field));
+                                        //txtFit.setText("step:" + dp.getValue(field));
+                                        totalStep += dp.getValue(field).asInt();
+                                        FitData.setFitStep(totalStep);
+
+                                    }
+                                }
+                            }
+                        }
+
+                        Log.i(TAG_F, "Total step is " + String.valueOf(totalStep));
+                        //setTotalSteps();
+
+                    }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                    @Override
+                    public void onFailure(@NonNull Exception e) {
+                        Log.e(TAG_F, "onFailure()", e);
+                    }
+                })
+                .addOnCompleteListener(new OnCompleteListener<DataReadResponse>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataReadResponse> task) {
+                        Log.d(TAG_F, "onComplete()");
+                    }
+                });
+
+
+
+
+
+
     }
 }
