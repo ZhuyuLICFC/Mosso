@@ -1,5 +1,8 @@
 package bu.cs591.mosso;
 
+/**
+ * Data structure for fit statistics
+ */
 public class FitData {
     static int step = 0;
     static int calory = 0;

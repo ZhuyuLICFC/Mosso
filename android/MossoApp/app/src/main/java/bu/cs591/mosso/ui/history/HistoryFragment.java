@@ -22,6 +22,11 @@ import bu.cs591.mosso.entity.CurrentUser;
 import bu.cs591.mosso.entity.RunningRecord;
 import bu.cs591.mosso.utils.DateHelper;
 
+/**
+ * History Fragment
+ * shows all the running history of current user
+ * including users running heatmap and distance/duration/speed.
+ */
 public class HistoryFragment extends Fragment {
 
     private HistoryViewModel historyViewModel;

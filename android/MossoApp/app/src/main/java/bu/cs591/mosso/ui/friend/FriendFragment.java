@@ -29,12 +29,20 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 import bu.cs591.mosso.db.User;
 
+/**
+ * Friend Fragment
+ * present a friends list, user can view all its friends here
+ * also, user can go to the chat room by clicking the friends here.
+ */
 public class FriendFragment extends Fragment {
 
+    // friend view model, connected to the database
     private FriendViewModel friendViewModel;
 
+    // use a list view to present all the friends.
     private ListView lvFriends;
 
+    // the adapter for the list view
     private ListAdapter lvAdapter;
 
     private Context mContext;
@@ -52,6 +60,7 @@ public class FriendFragment extends Fragment {
             @Override
             public void onChanged(List<User> users) {
                 lvAdapter = new FriendsListAdapter(mContext, users);
+                // set the adapter, force the list view re-render the friends list.
                 lvFriends.setAdapter(lvAdapter);
             }
         });
@@ -60,6 +69,10 @@ public class FriendFragment extends Fragment {
     }
 }
 
+/**
+ * FriendsListAdapter
+ * the adapter for the list view
+ */
 class FriendsListAdapter extends BaseAdapter {
     private List<User> friends;
 
@@ -70,21 +83,42 @@ class FriendsListAdapter extends BaseAdapter {
         friends = new ArrayList<>(users);
     }
 
+    /**
+     * get the number of items in the list view.
+     * @return
+     */
     @Override
     public int getCount() {
         return friends.size();
     }
 
+    /**
+     * get the list items
+     * @param position
+     * @return
+     */
     @Override
     public Object getItem(int position) {
         return friends.get(position);
     }
 
+    /**
+     * get item id
+     * @param position
+     * @return
+     */
     @Override
     public long getItemId(int position) {
         return position;
     }
 
+    /**
+     * get the view of each list item
+     * @param position
+     * @param convertView
+     * @param parent
+     * @return
+     */
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
         View row;
@@ -98,6 +132,7 @@ class FriendsListAdapter extends BaseAdapter {
             row = convertView;
         }
 
+        // update the UI
         ImageView friendAvatar = (ImageView) row.findViewById(R.id.friendImageView);
         TextView friendName = (TextView) row.findViewById(R.id.friendNameTextView);
         TextView friendEmail = (TextView) row.findViewById(R.id.friendEmailTextView);
@@ -111,6 +146,8 @@ class FriendsListAdapter extends BaseAdapter {
         friendName.setText(friend.name);
         friendEmail.setText(friend.email);
 
+        // also add a onClickListener to current row, thus user can move to the chat room
+        // by clicking this row
         row.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

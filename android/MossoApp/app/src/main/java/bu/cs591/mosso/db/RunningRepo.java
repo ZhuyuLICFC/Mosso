@@ -11,12 +11,20 @@ import java.util.List;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+/**
+ * Running locations repository for location tracking
+ * It's a singleton class
+ */
 public class RunningRepo {
     private static final RunningRepo INSTANCE = new RunningRepo();
+    // the minimum distance between current location and last updated location
     private static final float UPDATE_DIST_LIMIT = 10f;
 
+    // current location
     private Location currLocation;
+    // a list of locations, record the route
     private List<Location> locations;
+    // a list of locations, encapsulated by LiveData
     private MutableLiveData<List<Location>> routes;
 
     private RunningRepo() {
@@ -33,7 +41,13 @@ public class RunningRepo {
         return routes;
     }
 
+    /**
+     * add a new location to the repo
+     * @param location: new location
+     */
     public void addNewLocation(Location location) {
+        // if the distance between newlocation and last updated location is larger than the
+        // upper limit, we will put this new location into the repo and update routes
         if (currLocation == null || currLocation.distanceTo(location) > UPDATE_DIST_LIMIT) {
             currLocation = location;
             locations.add(currLocation);

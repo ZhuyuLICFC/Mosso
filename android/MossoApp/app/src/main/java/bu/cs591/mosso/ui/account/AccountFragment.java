@@ -42,6 +42,12 @@ import bu.cs591.mosso.entity.CurrentUser;
 
 import static com.firebase.ui.auth.AuthUI.TAG;
 
+/**
+ * Account fragment
+ * display user's basic information.
+ * including user's name, email etc..
+ * connected to AccountViewModel.java
+ */
 public class AccountFragment extends Fragment {
 
     private AccountViewModel accountViewModel;
@@ -52,6 +58,7 @@ public class AccountFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        // get the reference of account view model
         accountViewModel =
                 ViewModelProviders.of(this).get(AccountViewModel.class);
         final View root = inflater.inflate(R.layout.fragment_account, container, false);
@@ -65,8 +72,12 @@ public class AccountFragment extends Fragment {
 
         txtEmail = (TextView) root.findViewById(R.id.txtEmail);
         photo = (ImageView) root.findViewById(R.id.photo);
-
+        // add observer, listen to the changes in the account view model
         accountViewModel.getCurrentAccount().observe(this, new Observer<User>() {
+            /**
+             * When changed happens, update the related UI
+             * @param user
+             */
             @Override
             public void onChanged(User user) {
                 txtEmail.setText(user.email);
@@ -75,6 +86,7 @@ public class AccountFragment extends Fragment {
             }
         });
 
+        // Log Out
         btnSignOut = (Button)root.findViewById(R.id.btnLogOut);
         btnSignOut.setOnClickListener(new View.OnClickListener() {
             @Override

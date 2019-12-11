@@ -83,6 +83,11 @@ import bu.cs591.mosso.entity.RunningRecord;
 import bu.cs591.mosso.utils.DateHelper;
 import bu.cs591.mosso.utils.ImageHelper;
 
+/**
+ * Map Fragment
+ * Show the user's running locations and friends locations
+ * tracking users' running routes
+ */
 public class MapFragment extends Fragment
         implements
         OnMapReadyCallback,

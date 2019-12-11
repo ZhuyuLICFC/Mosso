@@ -42,6 +42,10 @@ import bu.cs591.mosso.db.User;
 import bu.cs591.mosso.entity.BasicUser;
 import bu.cs591.mosso.entity.CurrentUser;
 
+/**
+ * Log in Activity
+ * use firebase authentication to log in
+ */
 public class LogInActivity extends AppCompatActivity {
 
     public static AtomicInteger cnt = new AtomicInteger(0);

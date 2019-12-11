@@ -47,8 +47,12 @@ import com.google.firebase.storage.StorageReference;
 
 import java.util.Date;
 
+/**
+ * Activity for chat room
+ */
 public class ChatActivity extends AppCompatActivity {
 
+    // Message View Holder for Recycler View
     public static class MessageViewHolder extends RecyclerView.ViewHolder {
         TextView messageTextView;
         ImageView messageImageView;

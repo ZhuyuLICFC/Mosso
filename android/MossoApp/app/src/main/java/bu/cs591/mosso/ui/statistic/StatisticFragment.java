@@ -68,6 +68,10 @@ import static java.text.DateFormat.getTimeInstance;
 import bu.cs591.mosso.FitData;
 import bu.cs591.mosso.R;
 
+/**
+ * Statistic Fragment
+ * show user's moving data including steps/calories...
+ */
 public class StatisticFragment extends Fragment {
 
     private StatisticViewModel statisticViewModel;
