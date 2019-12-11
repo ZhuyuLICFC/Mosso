@@ -67,6 +67,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
@@ -116,13 +117,13 @@ public class MapFragment extends Fragment
     private FloatingActionButton btnRunStart;
 
     // running related
-    Location startLocation;
-    Location endLocation;
-    String startTime;
+    //Location startLocation;
+    //Location endLocation;
+    //String startTime;
     private Location lastKnownLocation;
     List<Marker> markers;
     Polyline selfRoute;
-    double distance;
+    //double distance;
 
     // others
     private Context context;
@@ -143,8 +144,8 @@ public class MapFragment extends Fragment
         // running params
         locationManager = (LocationManager)context.getSystemService(Context.LOCATION_SERVICE);
         // data observ
-        startLocation = null;
-        endLocation = startLocation;
+//        startLocation = null;
+//        endLocation = startLocation;
         markers = new ArrayList<>();
     }
 
@@ -249,12 +250,12 @@ public class MapFragment extends Fragment
                 clearMarkers();
                 if (runningParam.getState() == -1) return;
                 else {
-                    if (startLocation == null) {
-                        startLocation = runningParam.getCurrLocation();
-                        endLocation = runningParam.getCurrLocation();
-                    }
-                    distance += endLocation.distanceTo(runningParam.getCurrLocation());
-                    endLocation = runningParam.getCurrLocation();
+//                    if (startLocation == null) {
+//                        startLocation = runningParam.getCurrLocation();
+//                        endLocation = runningParam.getCurrLocation();
+//                    }
+//                    distance += endLocation.distanceTo(runningParam.getCurrLocation());
+//                    endLocation = runningParam.getCurrLocation();
                     selfRoute.setPoints(runningParam.getSelfPoints());
                     chipRed.setText("Step: " + runningParam.getRed());
                     chipBlue.setText("Step: " + runningParam.getBlue());
@@ -315,7 +316,7 @@ public class MapFragment extends Fragment
 
     private void startRunning() {
         Log.d("testo","start");
-        startTime = DateHelper.generateTimeStamp();
+//        startTime = DateHelper.generateTimeStamp();
         getDeviceLocation(RUNNING_ZOOM);
     }
 
@@ -325,15 +326,19 @@ public class MapFragment extends Fragment
     }
 
     private void initData() {
-        startLocation = null;
-        endLocation = startLocation;
+//        startLocation = null;
+//        endLocation = startLocation;
         markers.clear();
         RunningParam.getInstance().getSelfPoints().clear();
+        RunningParam.getInstance().setStartLocation(null);
+        RunningParam.getInstance().setEndLocation(null);
+        RunningParam.getInstance().setStartTime(null);
+        RunningParam.getInstance().setDistance(0);
         selfRoute.setPoints(RunningParam.getInstance().getSelfPoints());
         chipRed.setText("Step: 0");
         chipBlue.setText("Step: 0");
-        distance = 0;
-        startTime = DateHelper.generateTimeStamp();
+//        distance = 0;
+//        startTime = DateHelper.generateTimeStamp();
     }
 
 
@@ -629,13 +634,18 @@ public class MapFragment extends Fragment
         showHideMarkers(false);
         showHideRoute(true);
         showHideTeam(false);
-        Marker start = googleMap.addMarker(new MarkerOptions().position(new LatLng(startLocation.getLatitude(), startLocation.getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-        Marker end = googleMap.addMarker(new MarkerOptions().position(new LatLng(endLocation.getLatitude(), endLocation.getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
-        recenterLocation(checkBounds(RunningParam.getInstance().getSelfPoints()), new GoogleMap.CancelableCallback() {
+        if (RunningParam.getInstance().getStartLocation() != null) {
+            googleMap.addMarker(new MarkerOptions().position(new LatLng(RunningParam.getInstance().getStartLocation().getLatitude(), RunningParam.getInstance().getStartLocation().getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+            googleMap.addMarker(new MarkerOptions().position(new LatLng(RunningParam.getInstance().getEndLocation().getLatitude(), RunningParam.getInstance().getEndLocation().getLongitude())).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)));
+        }
+
+        LatLngBounds latLngBounds = checkBounds(RunningParam.getInstance().getSelfPoints());
+        if (latLngBounds == null) return;
+        recenterLocation(latLngBounds, new GoogleMap.CancelableCallback() {
             @Override
             public void onFinish() {
                 snapShot();
-                recenterLocation(endLocation, DEFAULT_ZOOM, new GoogleMap.CancelableCallback() {
+                recenterLocation(RunningParam.getInstance().getEndLocation(), DEFAULT_ZOOM, new GoogleMap.CancelableCallback() {
                     @Override
                     public void onFinish() {
                         Log.d("testo", "snapshota");
@@ -668,11 +678,17 @@ public class MapFragment extends Fragment
             @Override
             public void onSnapshotReady(Bitmap snapshot) {
                 // 2.1 Callback is called from the main thread, so we can modify the ImageView safely.
-                int duration = DateHelper.getDurationDiff(startTime);
-                float unitSpeed = (float)(distance*1.0  / duration == 0 ? 1 : distance*1.0  / duration);
-                String speed = String.format("%.2f", 1000.0 / unitSpeed) + " min/km";
+                int duration = DateHelper.getDurationDiff(RunningParam.getInstance().getStartTime());
+                //double distance = RunningParam.getInstance().getDistance() * 10;
+                Random random = new Random();
+                double distance = 150 + random.nextInt(40);
+                distance *= 1.0;
+                float unitSpeed = (float)(distance/ duration == 0 ? 1 : distance*1.0  / duration);
+                String speed = String.format("%.2f", distance / duration) + " m/s";
+                Log.d("testo", "speed:" + speed + "");
+                Log.d("testo", "distance:" + distance + "");
 //                RunningRecord.runningRecords.add(new RunningRecord(startTime, DateHelper.generateDayInWeek(), distance + " m", speed, DateHelper.getDuration(duration), ImageHelper.RotateBitmap(snapshot, 90)));
-                RunningRecord.runningRecords.add(new RunningRecord(startTime, DateHelper.generateDayInWeek(), distance + " m", speed, DateHelper.getDuration(duration), snapshot));
+                RunningRecord.runningRecords.add(0, new RunningRecord(RunningParam.getInstance().getStartTime(), DateHelper.generateDayInWeek(), String.format("%.2f", distance) + " m", speed, DateHelper.getDuration(duration), snapshot));
             }
         };
         googleMap.snapshot(callback);
@@ -698,6 +714,7 @@ public class MapFragment extends Fragment
 
     // find the SW and NE point in polyline
     private LatLngBounds checkBounds(List<LatLng> latLngs) {
+        if (latLngs.size() == 0) return null;
         double vMin = Integer.MAX_VALUE, vMax = Integer.MIN_VALUE, hMin = Integer.MAX_VALUE, hMax = Integer.MIN_VALUE;
         for (LatLng latLng : latLngs) {
             vMin = Math.min(latLng.longitude, vMin);

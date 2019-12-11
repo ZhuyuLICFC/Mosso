@@ -61,6 +61,7 @@ import bu.cs591.mosso.lambda.LambdaClient;
 import bu.cs591.mosso.lambda.RequestClass;
 import bu.cs591.mosso.lambda.ResponseClass;
 import bu.cs591.mosso.ui.map.MapViewModel;
+import bu.cs591.mosso.utils.DateHelper;
 
 import static java.text.DateFormat.getTimeInstance;
 
@@ -330,6 +331,15 @@ public class LocationUpdatesService extends Service {
         Log.i(TAG, "New location: " + location);
 
         final RunningParam runningParam = RunningParam.getInstance();
+        if (runningParam.getStartLocation() == null) {
+            Log.d("testo", "here");
+            runningParam.setStartLocation(runningParam.getCurrLocation());
+            runningParam.setStartTime(DateHelper.generateTimeStamp());
+            runningParam.setEndLocation(location);
+        }
+        runningParam.setDistance(runningParam.getEndLocation().distanceTo(location));
+        runningParam.setEndLocation(location);
+
         runningParam.setCurrLocation(location);
         runningParam.setSelfPrevSteps(runningParam.getSelfCurSteps());
         accessGoogleFit();

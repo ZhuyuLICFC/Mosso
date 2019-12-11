@@ -3,6 +3,7 @@ package bu.cs591.mosso;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
@@ -108,6 +109,8 @@ public class LogInActivity extends AppCompatActivity {
 
     private void prepareUser() {
 
+        ProgressDialog progressDialog = ProgressDialog.show(LogInActivity.this, "",
+                "Preparing Data. Please wait...", true);
         final FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         final Map<String, BasicUser> friendsInfo = new HashMap<>();
@@ -131,6 +134,7 @@ public class LogInActivity extends AppCompatActivity {
                                             bitmap));
                                     LogInActivity.cnt.incrementAndGet();
                                     if (cnt.get() == total - 1) {
+                                        progressDialog.dismiss();
                                         Intent intent = new Intent(LogInActivity.this, MainActivity.class);
                                         startActivity(intent);
                                     }

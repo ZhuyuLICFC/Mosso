@@ -17,6 +17,9 @@ public class RunningParam {
     private static RunningParam instance;
 
     private Location currLocation;
+    private Location startLocation;
+    private Location endLocation;
+    private String startTime;
     private int selfCurSteps;
     private int selfPrevSteps;
     private Map<String, MarkerInfo> markersInfo;
@@ -24,6 +27,15 @@ public class RunningParam {
     private int red;
     private int blue;
     private List<LatLng> selfPoints;
+    double distance = 0;
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
 
     private RunningParam(Location currLocation, Map<String, MarkerInfo> markersInfo) {
         this.currLocation = currLocation;
@@ -125,5 +137,29 @@ public class RunningParam {
                 ", red=" + red +
                 ", blue=" + blue +
                 '}';
+    }
+
+    public Location getStartLocation() {
+        return startLocation;
+    }
+
+    public void setStartLocation(Location startLocation) {
+        this.startLocation = startLocation;
+    }
+
+    public Location getEndLocation() {
+        return endLocation;
+    }
+
+    public void setEndLocation(Location endLocation) {
+        this.endLocation = endLocation;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(String startTime) {
+        this.startTime = startTime;
     }
 }

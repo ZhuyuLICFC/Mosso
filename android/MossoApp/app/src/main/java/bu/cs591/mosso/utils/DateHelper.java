@@ -50,6 +50,7 @@ public class DateHelper {
         result.append(":");
         result.append(formatMinSec(duration % 60));
 
+        Log.d("testo", "duration:" + duration + "");
         return result.toString();
     }
 
