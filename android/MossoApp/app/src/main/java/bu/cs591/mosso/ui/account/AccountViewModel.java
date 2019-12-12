@@ -59,6 +59,8 @@ public class AccountViewModel extends ViewModel {
                                 Uri.parse(doc.getString("photo")));
                         myAccount.setValue(mUser);
                     } else {
+                        // if user is not existed in the database...
+                        // add new user to the database
                         addUser();
                     }
                 } else {
@@ -70,6 +72,9 @@ public class AccountViewModel extends ViewModel {
         });
     }
 
+    /**
+     * add a new user to the database
+     */
     private void addUser() {
         Map<String, Object> data = new HashMap<>();
         data.put("name", mUser.name);
@@ -85,5 +90,6 @@ public class AccountViewModel extends ViewModel {
         return mText;
     }
 
+    // return the LiveData of current user
     public LiveData<User> getCurrentAccount() { return myAccount; }
 }

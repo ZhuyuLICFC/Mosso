@@ -57,6 +57,9 @@ import bu.cs591.mosso.entity.RunningParam;
 import bu.cs591.mosso.lambda.LambdaClient;
 import bu.cs591.mosso.ui.map.MapFragment;
 
+/**
+ * Main Activity for switching different fragments
+ */
 public class MainActivity extends AppCompatActivity implements MapFragment.MapFragmentListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();

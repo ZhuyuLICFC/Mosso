@@ -65,6 +65,9 @@ import bu.cs591.mosso.utils.DateHelper;
 
 import static java.text.DateFormat.getTimeInstance;
 
+/**
+ * a service used to tracking users' locations when running
+ */
 public class LocationUpdatesService extends Service {
     private static final String PACKAGE_NAME = "bu.cs591.mosso";
 

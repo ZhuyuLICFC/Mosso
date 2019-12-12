@@ -2,12 +2,21 @@ package bu.cs591.mosso.db;
 
 import java.util.Date;
 
+/**
+ *  Data Structure for message in chat room.
+ */
 public class Message {
+    // the content of this message
     private String text;
+    // the name of the sender
     private String name;
+    // the photo url of the sender
     private String photoUrl;
+    // the image url in the message
     private String imageUrl;
+    // the room id of this message
     private String room;
+    // the created time
     private Date timestamp;
 
     public Message() {

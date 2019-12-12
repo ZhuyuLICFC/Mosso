@@ -24,6 +24,9 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import bu.cs591.mosso.db.User;
 
+/**
+ * the view model for friend fragment
+ */
 public class FriendViewModel extends ViewModel {
 
     private List<User> friends;
@@ -43,6 +46,10 @@ public class FriendViewModel extends ViewModel {
             loadFriends(fireUser.getUid());
     }
 
+    /**
+     * load all the friends from database based on current user
+     * @param uid
+     */
     private void loadFriends(String uid) {
         db.collection("friends").document(uid)
                 .addSnapshotListener(new EventListener<DocumentSnapshot>() {
