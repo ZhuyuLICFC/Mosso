@@ -4,13 +4,13 @@ A social media based healthy tracking app
 1. DownLoad our project file. 
 2. Open Android Studio and click open an existing Android Studio Project
 3. Select MossoApp, click open like the following picture
-[setup3](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup3.png)
+![setup3](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup3.png)
 4. Download our google-services.json file from the link: [downLoad](https://drive.google.com/file/d/1tjB2S6fWJta_bllzeqsN46hhzvpaY6aD/view?usp=sharing)
 5. Drag this google-services.json which has been downloaded to the app folder in android studio
-[setup5](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup5.png)
-[setup5_2](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup5_2.png)
+![setup5](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup5.png)
+![setup5_2](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup5_2.png)
 6. After building successfully, click the run button(suggest use real android device)
-[setup6](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup6.png)
+![setup6](https://github.com/ZhuyuLICFC/Mosso/blob/master/android/MossoApp/ReadmePic/setup6.png)
 
 ### Notice: The first or second running might crash, just try one more time
 
